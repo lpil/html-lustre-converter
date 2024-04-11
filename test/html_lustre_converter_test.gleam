@@ -93,3 +93,19 @@ pub fn void_br_with_attrs_test() {
   |> html_lustre_converter.convert
   |> should.equal("html.br([attribute.class(\"good\")])")
 }
+
+pub fn its_already_a_page_test() {
+  "<html><head><title>Hi</title></head><body>Yo</body></html>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.html(\n  [],\n  [html.head([], [html.title([], [text(\"Hi\")])]), html.body([], [text(\"Yo\")])],\n)",
+  )
+}
+
+pub fn its_already_a_page_1_test() {
+  "<html><head></head><body>Yo</body></html>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.html([], [html.head([], []), html.body([], [text(\"Yo\")])])",
+  )
+}

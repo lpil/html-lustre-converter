@@ -3,9 +3,17 @@ import gleam/list
 import gleam/string
 import javascript_dom_parser.{type HtmlNode, Comment, Element, Text} as parser
 
-// TODO: do not unwrap the body the source contained body/head
-
-// TODO: document
+/// Convert a string of HTML in to the same document but using the Lustre HTML
+/// syntax.
+///
+/// The resulting code is expected to be in a module with these imports:
+///
+/// ```gleam
+/// import lustre/element/html
+/// import lustre/attribute.{attribute}
+/// import lustre/element.{element, text}
+/// ```
+///
 pub fn convert(html: String) -> String {
   let documents =
     html
@@ -22,9 +30,11 @@ pub fn convert(html: String) -> String {
 }
 
 fn strip_body_wrapper(html: HtmlNode, source: String) -> List(HtmlNode) {
+  let full_page = string.contains(source, "<head>")
   case html {
-    Element("HTML", [], [Element("HEAD", [], []), Element("BODY", [], nodes)]) ->
-      nodes
+    Element("HTML", [], [Element("HEAD", [], []), Element("BODY", [], nodes)])
+      if !full_page
+    -> nodes
     _ -> [html]
   }
 }
