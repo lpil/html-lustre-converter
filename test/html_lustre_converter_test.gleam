@@ -51,3 +51,11 @@ pub fn text_test() {
   |> html_lustre_converter.convert
   |> should.equal("text(\"Hello, Joe!\")")
 }
+
+pub fn element_lustre_does_not_have_a_helper_for_test() {
+  "<marquee>I will die mad that this element was removed</marquee>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "element(\"marquee\", [], [text(\"I will die mad that this element was removed\")])",
+  )
+}

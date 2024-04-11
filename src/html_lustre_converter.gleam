@@ -1,8 +1,11 @@
 import glam/doc.{type Document}
-import gleam/io
 import gleam/list
 import gleam/string
 import javascript_dom_parser.{type HtmlNode, Comment, Element, Text} as parser
+
+// TODO: do not unwrap the body the source contained body/head
+// TODO: attributes
+// TODO: void elements
 
 // TODO: document
 pub fn convert(html: String) -> String {
@@ -21,7 +24,6 @@ pub fn convert(html: String) -> String {
 }
 
 fn strip_body_wrapper(html: HtmlNode, source: String) -> List(HtmlNode) {
-  // TODO: do not unwrap if the source contained it originally.
   case html {
     Element("HTML", [], [Element("HEAD", [], []), Element("BODY", [], nodes)]) ->
       nodes
@@ -54,7 +56,6 @@ fn print_element(
   children: List(HtmlNode),
 ) -> Document {
   let tag = string.lowercase(tag)
-  let constructor = doc.from_string("html." <> tag)
   let attributes =
     list.map(attributes, print_attribute)
     |> wrap("[", "]")
@@ -62,8 +63,133 @@ fn print_element(
     list.map(children, print)
     |> wrap("[", "]")
 
-  constructor
-  |> doc.append(wrap([attributes, children], "(", ")"))
+  case tag {
+    "a"
+    | "abbr"
+    | "address"
+    | "area"
+    | "article"
+    | "aside"
+    | "audio"
+    | "b"
+    | "base"
+    | "bdi"
+    | "bdo"
+    | "blockquote"
+    | "body"
+    | "br"
+    | "button"
+    | "canvas"
+    | "caption"
+    | "cite"
+    | "code"
+    | "col"
+    | "colgroup"
+    | "data"
+    | "datalist"
+    | "dd"
+    | "del"
+    | "details"
+    | "dfn"
+    | "dialog"
+    | "div"
+    | "dl"
+    | "dt"
+    | "em"
+    | "embed"
+    | "fieldset"
+    | "figcaption"
+    | "figure"
+    | "footer"
+    | "form"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "head"
+    | "header"
+    | "hgroup"
+    | "hr"
+    | "html"
+    | "i"
+    | "iframe"
+    | "img"
+    | "input"
+    | "ins"
+    | "kbd"
+    | "label"
+    | "legend"
+    | "li"
+    | "link"
+    | "main"
+    | "map"
+    | "mark"
+    | "math"
+    | "menu"
+    | "meta"
+    | "meter"
+    | "nav"
+    | "noscript"
+    | "object"
+    | "ol"
+    | "optgroup"
+    | "option"
+    | "output"
+    | "p"
+    | "picture"
+    | "portal"
+    | "pre"
+    | "progress"
+    | "q"
+    | "rp"
+    | "rt"
+    | "ruby"
+    | "s"
+    | "samp"
+    | "script"
+    | "search"
+    | "section"
+    | "select"
+    | "slot"
+    | "small"
+    | "source"
+    | "span"
+    | "strong"
+    | "style"
+    | "sub"
+    | "summary"
+    | "sup"
+    | "svg"
+    | "table"
+    | "tbody"
+    | "td"
+    | "template"
+    | "text"
+    | "textarea"
+    | "tfoot"
+    | "th"
+    | "thead"
+    | "time"
+    | "title"
+    | "tr"
+    | "track"
+    | "u"
+    | "ul"
+    | "var"
+    | "video"
+    | "wbr" -> {
+      doc.from_string("html." <> tag)
+      |> doc.append(wrap([attributes, children], "(", ")"))
+    }
+
+    _ -> {
+      let tag = print_string(tag)
+      doc.from_string("element")
+      |> doc.append(wrap([tag, attributes, children], "(", ")"))
+    }
+  }
 }
 
 fn print_attribute(attribute: #(String, String)) -> Document {
