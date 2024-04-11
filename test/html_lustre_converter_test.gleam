@@ -59,3 +59,25 @@ pub fn element_lustre_does_not_have_a_helper_for_test() {
     "element(\"marquee\", [], [text(\"I will die mad that this element was removed\")])",
   )
 }
+
+pub fn attribute_test() {
+  "<a href=\"https://gleam.run/\">The best site</a>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.a([attribute.href(\"https://gleam.run/\")], [text(\"The best site\")])",
+  )
+}
+
+pub fn other_attribute_test() {
+  "<a data-thing=\"1\">The best site</a>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.a([attribute(\"data-thing\", \"1\")], [text(\"The best site\")])",
+  )
+}
+
+pub fn no_value_attribute_test() {
+  "<p type=good></p>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.p([attribute.type_(\"good\")], [])")
+}

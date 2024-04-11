@@ -4,7 +4,6 @@ import gleam/string
 import javascript_dom_parser.{type HtmlNode, Comment, Element, Text} as parser
 
 // TODO: do not unwrap the body the source contained body/head
-// TODO: attributes
 // TODO: void elements
 
 // TODO: document
@@ -41,13 +40,11 @@ fn print(html: HtmlNode) -> Document {
 }
 
 fn print_text(t: String) -> Document {
-  doc.from_string("text(")
-  |> doc.append(print_string(t))
-  |> doc.append(doc.from_string(")"))
+  doc.from_string("text(" <> print_string(t) <> ")")
 }
 
-fn print_string(t: String) -> Document {
-  doc.from_string("\"" <> string.replace(t, "\"", "\"\\\"" <> "\"") <> "\"")
+fn print_string(t: String) -> String {
+  "\"" <> string.replace(t, "\"", "\"\\\"" <> "\"") <> "\""
 }
 
 fn print_element(
@@ -185,7 +182,7 @@ fn print_element(
     }
 
     _ -> {
-      let tag = print_string(tag)
+      let tag = doc.from_string(print_string(tag))
       doc.from_string("element")
       |> doc.append(wrap([tag, attributes, children], "(", ")"))
     }
@@ -193,9 +190,75 @@ fn print_element(
 }
 
 fn print_attribute(attribute: #(String, String)) -> Document {
-  doc.from_string(attribute.0)
-  |> doc.append(doc.from_string("="))
-  |> doc.append(print_string(attribute.1))
+  case attribute.0 {
+    "accept"
+    | "accept_charset"
+    | "action"
+    | "alt"
+    | "attribute"
+    | "autocomplete"
+    | "autofocus"
+    | "autoplay"
+    | "checked"
+    | "class"
+    | "classes"
+    | "cols"
+    | "controls"
+    | "disabled"
+    | "download"
+    | "enctype"
+    | "for"
+    | "form_action"
+    | "form_enctype"
+    | "form_method"
+    | "form_novalidate"
+    | "form_target"
+    | "height"
+    | "href"
+    | "id"
+    | "loop"
+    | "map"
+    | "max"
+    | "method"
+    | "min"
+    | "msg"
+    | "name"
+    | "none"
+    | "novalidate"
+    | "on"
+    | "pattern"
+    | "placeholder"
+    | "property"
+    | "readonly"
+    | "rel"
+    | "required"
+    | "role"
+    | "rows"
+    | "selected"
+    | "src"
+    | "step"
+    | "style"
+    | "target"
+    | "value"
+    | "width"
+    | "wrap" -> {
+      doc.from_string(
+        "attribute." <> attribute.0 <> "(" <> print_string(attribute.1) <> ")",
+      )
+    }
+
+    "type" ->
+      doc.from_string("attribute.type_(" <> print_string(attribute.1) <> ")")
+
+    _ -> {
+      let children = [
+        doc.from_string(print_string(attribute.0)),
+        doc.from_string(print_string(attribute.1)),
+      ]
+      doc.from_string("attribute")
+      |> doc.append(wrap(children, "(", ")"))
+    }
+  }
 }
 
 fn wrap(items: List(Document), open: String, close: String) -> Document {
