@@ -4,7 +4,6 @@ import gleam/string
 import javascript_dom_parser.{type HtmlNode, Comment, Element, Text} as parser
 
 // TODO: do not unwrap the body the source contained body/head
-// TODO: void elements
 
 // TODO: document
 pub fn convert(html: String) -> String {
@@ -61,26 +60,41 @@ fn print_element(
     |> wrap("[", "]")
 
   case tag {
+    "area"
+    | "base"
+    | "br"
+    | "col"
+    | "embed"
+    | "hr"
+    | "img"
+    | "input"
+    | "link"
+    | "meta"
+    | "param"
+    | "source"
+    | "track"
+    | "wbr" -> {
+      doc.from_string("html." <> tag <> "(")
+      |> doc.append(attributes)
+      |> doc.append(doc.from_string(")"))
+    }
+
     "a"
     | "abbr"
     | "address"
-    | "area"
     | "article"
     | "aside"
     | "audio"
     | "b"
-    | "base"
     | "bdi"
     | "bdo"
     | "blockquote"
     | "body"
-    | "br"
     | "button"
     | "canvas"
     | "caption"
     | "cite"
     | "code"
-    | "col"
     | "colgroup"
     | "data"
     | "datalist"
@@ -93,7 +107,6 @@ fn print_element(
     | "dl"
     | "dt"
     | "em"
-    | "embed"
     | "fieldset"
     | "figcaption"
     | "figure"
@@ -108,24 +121,19 @@ fn print_element(
     | "head"
     | "header"
     | "hgroup"
-    | "hr"
     | "html"
     | "i"
     | "iframe"
-    | "img"
-    | "input"
     | "ins"
     | "kbd"
     | "label"
     | "legend"
     | "li"
-    | "link"
     | "main"
     | "map"
     | "mark"
     | "math"
     | "menu"
-    | "meta"
     | "meter"
     | "nav"
     | "noscript"
@@ -151,7 +159,6 @@ fn print_element(
     | "select"
     | "slot"
     | "small"
-    | "source"
     | "span"
     | "strong"
     | "style"
@@ -171,12 +178,10 @@ fn print_element(
     | "time"
     | "title"
     | "tr"
-    | "track"
     | "u"
     | "ul"
     | "var"
-    | "video"
-    | "wbr" -> {
+    | "video" -> {
       doc.from_string("html." <> tag)
       |> doc.append(wrap([attributes, children], "(", ")"))
     }

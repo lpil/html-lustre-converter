@@ -81,3 +81,15 @@ pub fn no_value_attribute_test() {
   |> html_lustre_converter.convert
   |> should.equal("html.p([attribute.type_(\"good\")], [])")
 }
+
+pub fn void_br_test() {
+  "<br>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.br([])")
+}
+
+pub fn void_br_with_attrs_test() {
+  "<br class=good>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.br([attribute.class(\"good\")])")
+}
