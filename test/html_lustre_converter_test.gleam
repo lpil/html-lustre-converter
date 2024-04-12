@@ -133,3 +133,44 @@ pub fn int_attribute_test() {
   |> html_lustre_converter.convert
   |> should.equal("html.br([attribute.width(400)])")
 }
+
+pub fn full_page_test() {
+  let code =
+    "
+<!doctype html>
+<html>
+  <head>
+    <title>Hello!</title>
+  </head>
+  <body>
+    <h1>Goodbye!</h1>
+  </body>
+</html>
+  "
+    |> html_lustre_converter.convert
+
+  code
+  |> should.equal(
+    "html.html(
+  [],
+  [
+    html.head([], [html.title([], [text(\"Hello!\")])]),
+    html.body([], [html.h1([], [text(\"Goodbye!\")])]),
+  ],
+)",
+  )
+}
+
+pub fn comment_test() {
+  "<h1><!-- This is a comment --></h1>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.h1([], [])")
+}
+
+pub fn trailing_whitespace_test() {
+  "<h1>Hello </h1><h2>world</h2>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "[html.h1([], [text(\"Hello \")]), html.h2([], [text(\"world\")])]",
+  )
+}

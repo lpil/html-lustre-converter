@@ -66,7 +66,7 @@ fn print_element(
     list.map(attributes, print_attribute)
     |> wrap("[", "]")
   let children =
-    list.map(children, print)
+    print_children(children)
     |> wrap("[", "]")
 
   case tag {
@@ -202,6 +202,21 @@ fn print_element(
       |> doc.append(wrap([tag, attributes, children], "(", ")"))
     }
   }
+}
+
+fn print_children(children: List(HtmlNode)) -> List(Document) {
+  list.filter_map(children, fn(node) {
+    case node {
+      Element(_, _, _) -> Ok(print(node))
+      Comment(_) -> Error(Nil)
+      Text(t) -> {
+        case string.trim_left(t) {
+          "" -> Error(Nil)
+          t -> Ok(print_text(t))
+        }
+      }
+    }
+  })
 }
 
 fn print_attribute(attribute: #(String, String)) -> Document {
