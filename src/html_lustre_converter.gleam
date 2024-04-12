@@ -19,7 +19,7 @@ pub fn convert(html: String) -> String {
     html
     |> parser.parse_to_records
     |> strip_body_wrapper(html)
-    |> list.map(print)
+    |> print_children(StripWhitespace)
 
   case documents {
     [] -> doc.empty
@@ -29,6 +29,11 @@ pub fn convert(html: String) -> String {
   |> doc.to_string(80)
 }
 
+type WhitespaceMode {
+  PreserveWhitespace
+  StripWhitespace
+}
+
 fn strip_body_wrapper(html: HtmlNode, source: String) -> List(HtmlNode) {
   let full_page = string.contains(source, "<head>")
   case html {
@@ -36,15 +41,6 @@ fn strip_body_wrapper(html: HtmlNode, source: String) -> List(HtmlNode) {
       if !full_page
     -> nodes
     _ -> [html]
-  }
-}
-
-fn print(html: HtmlNode) -> Document {
-  case html {
-    Element(tag, attributes, children) ->
-      print_element(tag, attributes, children)
-    Text(t) -> print_text(t)
-    Comment(_) -> doc.empty
   }
 }
 
@@ -60,13 +56,11 @@ fn print_element(
   tag: String,
   attributes: List(#(String, String)),
   children: List(HtmlNode),
+  ws: WhitespaceMode,
 ) -> Document {
   let tag = string.lowercase(tag)
   let attributes =
     list.map(attributes, print_attribute)
-    |> wrap("[", "]")
-  let children =
-    print_children(children)
     |> wrap("[", "]")
 
   case tag {
@@ -155,7 +149,6 @@ fn print_element(
     | "p"
     | "picture"
     | "portal"
-    | "pre"
     | "progress"
     | "q"
     | "rp"
@@ -181,7 +174,6 @@ fn print_element(
     | "td"
     | "template"
     | "text"
-    | "textarea"
     | "tfoot"
     | "th"
     | "thead"
@@ -192,11 +184,26 @@ fn print_element(
     | "ul"
     | "var"
     | "video" -> {
+      let children = wrap(print_children(children, ws), "[", "]")
       doc.from_string("html." <> tag)
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
 
+    "pre" -> {
+      let children =
+        wrap(print_children(children, PreserveWhitespace), "[", "]")
+      doc.from_string("html." <> tag)
+      |> doc.append(wrap([attributes, children], "(", ")"))
+    }
+
+    "textarea" -> {
+      let content = doc.from_string(print_string(get_text_content(children)))
+      doc.from_string("html." <> tag)
+      |> doc.append(wrap([attributes, content], "(", ")"))
+    }
+
     _ -> {
+      let children = wrap(print_children(children, ws), "[", "]")
       let tag = doc.from_string(print_string(tag))
       doc.from_string("element")
       |> doc.append(wrap([tag, attributes, children], "(", ")"))
@@ -204,17 +211,31 @@ fn print_element(
   }
 }
 
-fn print_children(children: List(HtmlNode)) -> List(Document) {
+fn get_text_content(nodes: List(HtmlNode)) -> String {
+  list.filter_map(nodes, fn(node) {
+    case node {
+      Text(t) -> Ok(t)
+      _ -> Error(Nil)
+    }
+  })
+  |> string.concat
+}
+
+fn print_children(
+  children: List(HtmlNode),
+  ws: WhitespaceMode,
+) -> List(Document) {
   list.filter_map(children, fn(node) {
     case node {
-      Element(_, _, _) -> Ok(print(node))
+      Element(a, b, c) -> Ok(print_element(a, b, c, ws))
       Comment(_) -> Error(Nil)
-      Text(t) -> {
+      Text(t) if ws == StripWhitespace -> {
         case string.trim_left(t) {
           "" -> Error(Nil)
           t -> Ok(print_text(t))
         }
       }
+      Text(t) -> Ok(print_text(t))
     }
   })
 }

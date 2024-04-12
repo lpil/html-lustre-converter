@@ -174,3 +174,28 @@ pub fn trailing_whitespace_test() {
     "[html.h1([], [text(\"Hello \")]), html.h2([], [text(\"world\")])]",
   )
 }
+
+pub fn textarea_whitespace_test() {
+  "<div>
+  <textarea>
+    Hello!
+  </textarea>
+</div>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.div([], [html.textarea([], \"    Hello!\n  \")])")
+}
+
+pub fn pre_whitespace_test() {
+  "<pre>
+    <code>
+      Hello!
+    </code>
+  </pre>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.pre(
+  [],
+  [text(\"    \"), html.code([], [text(\"\n      Hello!\n    \")]), text(\"\n  \")],
+)",
+  )
+}
