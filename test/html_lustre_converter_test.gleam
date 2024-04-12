@@ -109,3 +109,9 @@ pub fn its_already_a_page_1_test() {
     "html.html([], [html.head([], []), html.body([], [text(\"Yo\")])])",
   )
 }
+
+pub fn text_with_a_quote_in_it_test() {
+  "Here is a quote \" "
+  |> html_lustre_converter.convert
+  |> should.equal("text(\"Here is a quote \\\" \")")
+}

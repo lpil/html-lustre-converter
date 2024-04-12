@@ -53,7 +53,7 @@ fn print_text(t: String) -> Document {
 }
 
 fn print_string(t: String) -> String {
-  "\"" <> string.replace(t, "\"", "\"\\\"" <> "\"") <> "\""
+  "\"" <> string.replace(t, "\"", "\\\"") <> "\""
 }
 
 fn print_element(
