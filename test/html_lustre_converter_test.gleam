@@ -115,3 +115,21 @@ pub fn text_with_a_quote_in_it_test() {
   |> html_lustre_converter.convert
   |> should.equal("text(\"Here is a quote \\\" \")")
 }
+
+pub fn non_string_attribute_test() {
+  "<br autoplay>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.br([attribute(\"autoplay\", \"\")])")
+}
+
+pub fn bool_attribute_test() {
+  "<br required>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.br([attribute.required(True)])")
+}
+
+pub fn int_attribute_test() {
+  "<br width=\"400\">"
+  |> html_lustre_converter.convert
+  |> should.equal("html.br([attribute.width(400)])")
+}

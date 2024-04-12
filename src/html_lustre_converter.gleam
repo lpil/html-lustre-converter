@@ -206,32 +206,20 @@ fn print_element(
 
 fn print_attribute(attribute: #(String, String)) -> Document {
   case attribute.0 {
-    "accept"
-    | "accept_charset"
-    | "action"
+    "action"
     | "alt"
     | "attribute"
     | "autocomplete"
-    | "autofocus"
-    | "autoplay"
-    | "checked"
     | "class"
-    | "classes"
-    | "cols"
-    | "controls"
-    | "disabled"
     | "download"
     | "enctype"
     | "for"
     | "form_action"
     | "form_enctype"
     | "form_method"
-    | "form_novalidate"
     | "form_target"
-    | "height"
     | "href"
     | "id"
-    | "loop"
     | "map"
     | "max"
     | "method"
@@ -239,23 +227,15 @@ fn print_attribute(attribute: #(String, String)) -> Document {
     | "msg"
     | "name"
     | "none"
-    | "novalidate"
     | "on"
     | "pattern"
     | "placeholder"
-    | "property"
-    | "readonly"
     | "rel"
-    | "required"
     | "role"
-    | "rows"
-    | "selected"
     | "src"
     | "step"
-    | "style"
     | "target"
     | "value"
-    | "width"
     | "wrap" -> {
       doc.from_string(
         "attribute." <> attribute.0 <> "(" <> print_string(attribute.1) <> ")",
@@ -264,6 +244,22 @@ fn print_attribute(attribute: #(String, String)) -> Document {
 
     "type" ->
       doc.from_string("attribute.type_(" <> print_string(attribute.1) <> ")")
+
+    "checked"
+    | "controls"
+    | "disabled"
+    | "form_novalidate"
+    | "loop"
+    | "novalidate"
+    | "readonly"
+    | "required"
+    | "selected" -> {
+      doc.from_string("attribute." <> attribute.0 <> "(True)")
+    }
+
+    "width" | "height" | "cols" | "rows" -> {
+      doc.from_string("attribute." <> attribute.0 <> "(" <> attribute.1 <> ")")
+    }
 
     _ -> {
       let children = [
