@@ -21,9 +21,11 @@ runtime = "deno"
 allow_read = ["test", "gleam.toml"]
 
 [dependencies]
+argv = "~> 1.0"
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
-javascript_dom_parser = ">= 1.0.0 and < 2.0.0"
 glam = ">= 2.0.0 and < 3.0.0"
+javascript_dom_parser = ">= 1.0.0 and < 2.0.0"
+simplifile = "~> 1.7"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
