@@ -40,10 +40,10 @@ var List = class {
     return desired === 0;
   }
   countLength() {
-    let length3 = 0;
+    let length4 = 0;
     for (let _ of this)
-      length3++;
-    return length3;
+      length4++;
+    return length4;
   }
 };
 function prepend(element2, tail) {
@@ -88,12 +88,12 @@ var BitArray = class _BitArray {
     return this.buffer.length;
   }
   // @internal
-  byteAt(index2) {
-    return this.buffer[index2];
+  byteAt(index3) {
+    return this.buffer[index3];
   }
   // @internal
-  floatAt(index2) {
-    return byteArrayToFloat(this.buffer.slice(index2, index2 + 8));
+  floatAt(index3) {
+    return byteArrayToFloat(this.buffer.slice(index3, index3 + 8));
   }
   // @internal
   intFromSlice(start4, end) {
@@ -104,8 +104,8 @@ var BitArray = class _BitArray {
     return new _BitArray(this.buffer.slice(start4, end));
   }
   // @internal
-  sliceAfter(index2) {
-    return new _BitArray(this.buffer.slice(index2));
+  sliceAfter(index3) {
+    return new _BitArray(this.buffer.slice(index3));
   }
 };
 function byteArrayToInt(byteArray) {
@@ -238,244 +238,6 @@ function to_result(option, e) {
   } else {
     return new Error2(e);
   }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/list.mjs
-function do_reverse(loop$remaining, loop$accumulator) {
-  while (true) {
-    let remaining = loop$remaining;
-    let accumulator = loop$accumulator;
-    if (remaining.hasLength(0)) {
-      return accumulator;
-    } else {
-      let item = remaining.head;
-      let rest$1 = remaining.tail;
-      loop$remaining = rest$1;
-      loop$accumulator = prepend(item, accumulator);
-    }
-  }
-}
-function reverse(xs) {
-  return do_reverse(xs, toList([]));
-}
-function do_filter_map(loop$list, loop$fun, loop$acc) {
-  while (true) {
-    let list = loop$list;
-    let fun = loop$fun;
-    let acc = loop$acc;
-    if (list.hasLength(0)) {
-      return reverse(acc);
-    } else {
-      let x = list.head;
-      let xs = list.tail;
-      let new_acc = (() => {
-        let $ = fun(x);
-        if ($.isOk()) {
-          let x$1 = $[0];
-          return prepend(x$1, acc);
-        } else {
-          return acc;
-        }
-      })();
-      loop$list = xs;
-      loop$fun = fun;
-      loop$acc = new_acc;
-    }
-  }
-}
-function filter_map(list, fun) {
-  return do_filter_map(list, fun, toList([]));
-}
-function do_map(loop$list, loop$fun, loop$acc) {
-  while (true) {
-    let list = loop$list;
-    let fun = loop$fun;
-    let acc = loop$acc;
-    if (list.hasLength(0)) {
-      return reverse(acc);
-    } else {
-      let x = list.head;
-      let xs = list.tail;
-      loop$list = xs;
-      loop$fun = fun;
-      loop$acc = prepend(fun(x), acc);
-    }
-  }
-}
-function map(list, fun) {
-  return do_map(list, fun, toList([]));
-}
-function do_append(loop$first, loop$second) {
-  while (true) {
-    let first = loop$first;
-    let second = loop$second;
-    if (first.hasLength(0)) {
-      return second;
-    } else {
-      let item = first.head;
-      let rest$1 = first.tail;
-      loop$first = rest$1;
-      loop$second = prepend(item, second);
-    }
-  }
-}
-function append(first, second) {
-  return do_append(reverse(first), second);
-}
-function do_intersperse(loop$list, loop$separator, loop$acc) {
-  while (true) {
-    let list = loop$list;
-    let separator = loop$separator;
-    let acc = loop$acc;
-    if (list.hasLength(0)) {
-      return reverse(acc);
-    } else {
-      let x = list.head;
-      let rest$1 = list.tail;
-      loop$list = rest$1;
-      loop$separator = separator;
-      loop$acc = prepend(x, prepend(separator, acc));
-    }
-  }
-}
-function intersperse(list, elem) {
-  if (list.hasLength(0)) {
-    return list;
-  } else if (list.hasLength(1)) {
-    return list;
-  } else {
-    let x = list.head;
-    let rest$1 = list.tail;
-    return do_intersperse(rest$1, elem, toList([x]));
-  }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/result.mjs
-function map2(result, fun) {
-  if (result.isOk()) {
-    let x = result[0];
-    return new Ok(fun(x));
-  } else {
-    let e = result[0];
-    return new Error2(e);
-  }
-}
-function map_error(result, fun) {
-  if (result.isOk()) {
-    let x = result[0];
-    return new Ok(x);
-  } else {
-    let error = result[0];
-    return new Error2(fun(error));
-  }
-}
-function try$(result, fun) {
-  if (result.isOk()) {
-    let x = result[0];
-    return fun(x);
-  } else {
-    let e = result[0];
-    return new Error2(e);
-  }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/string_builder.mjs
-function from_strings(strings) {
-  return concat(strings);
-}
-function from_string(string3) {
-  return identity(string3);
-}
-function to_string(builder) {
-  return identity(builder);
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/dynamic.mjs
-var DecodeError = class extends CustomType {
-  constructor(expected, found, path) {
-    super();
-    this.expected = expected;
-    this.found = found;
-    this.path = path;
-  }
-};
-function from(a) {
-  return identity(a);
-}
-function string(data) {
-  return decode_string(data);
-}
-function classify(data) {
-  return classify_dynamic(data);
-}
-function int(data) {
-  return decode_int(data);
-}
-function any(decoders) {
-  return (data) => {
-    if (decoders.hasLength(0)) {
-      return new Error2(
-        toList([new DecodeError("another type", classify(data), toList([]))])
-      );
-    } else {
-      let decoder = decoders.head;
-      let decoders$1 = decoders.tail;
-      let $ = decoder(data);
-      if ($.isOk()) {
-        let decoded = $[0];
-        return new Ok(decoded);
-      } else {
-        return any(decoders$1)(data);
-      }
-    }
-  };
-}
-function push_path(error, name) {
-  let name$1 = from(name);
-  let decoder = any(
-    toList([string, (x) => {
-      return map2(int(x), to_string2);
-    }])
-  );
-  let name$2 = (() => {
-    let $ = decoder(name$1);
-    if ($.isOk()) {
-      let name$22 = $[0];
-      return name$22;
-    } else {
-      let _pipe = toList(["<", classify(name$1), ">"]);
-      let _pipe$1 = from_strings(_pipe);
-      return to_string(_pipe$1);
-    }
-  })();
-  return error.withFields({ path: prepend(name$2, error.path) });
-}
-function map_errors(result, f) {
-  return map_error(
-    result,
-    (_capture) => {
-      return map(_capture, f);
-    }
-  );
-}
-function field(name, inner_type) {
-  return (value2) => {
-    let missing_field_error = new DecodeError("field", "nothing", toList([]));
-    return try$(
-      decode_field(value2, name),
-      (maybe_inner) => {
-        let _pipe = maybe_inner;
-        let _pipe$1 = to_result(_pipe, toList([missing_field_error]));
-        let _pipe$2 = try$(_pipe$1, inner_type);
-        return map_errors(
-          _pipe$2,
-          (_capture) => {
-            return push_path(_capture, name);
-          }
-        );
-      }
-    );
-  };
 }
 
 // build/dev/javascript/gleam_stdlib/dict.mjs
@@ -1181,7 +943,7 @@ var NOT_FOUND = {};
 function identity(x) {
   return x;
 }
-function to_string3(term) {
+function to_string(term) {
   return term.toString();
 }
 function string_replace(string3, target, substitute) {
@@ -1230,8 +992,8 @@ function contains_string(haystack, needle) {
 function trim_left(string3) {
   return string3.trimLeft();
 }
-function map_get(map4, key) {
-  const value2 = map4.get(key, NOT_FOUND);
+function map_get(map5, key) {
+  const value2 = map5.get(key, NOT_FOUND);
   if (value2 === NOT_FOUND) {
     return new Error2(Nil);
   }
@@ -1302,7 +1064,263 @@ function try_get_field(value2, field2, or_else) {
 
 // build/dev/javascript/gleam_stdlib/gleam/int.mjs
 function to_string2(x) {
-  return to_string3(x);
+  return to_string(x);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/list.mjs
+function do_reverse(loop$remaining, loop$accumulator) {
+  while (true) {
+    let remaining = loop$remaining;
+    let accumulator = loop$accumulator;
+    if (remaining.hasLength(0)) {
+      return accumulator;
+    } else {
+      let item = remaining.head;
+      let rest$1 = remaining.tail;
+      loop$remaining = rest$1;
+      loop$accumulator = prepend(item, accumulator);
+    }
+  }
+}
+function reverse(xs) {
+  return do_reverse(xs, toList([]));
+}
+function do_filter_map(loop$list, loop$fun, loop$acc) {
+  while (true) {
+    let list = loop$list;
+    let fun = loop$fun;
+    let acc = loop$acc;
+    if (list.hasLength(0)) {
+      return reverse(acc);
+    } else {
+      let x = list.head;
+      let xs = list.tail;
+      let new_acc = (() => {
+        let $ = fun(x);
+        if ($.isOk()) {
+          let x$1 = $[0];
+          return prepend(x$1, acc);
+        } else {
+          return acc;
+        }
+      })();
+      loop$list = xs;
+      loop$fun = fun;
+      loop$acc = new_acc;
+    }
+  }
+}
+function filter_map(list, fun) {
+  return do_filter_map(list, fun, toList([]));
+}
+function do_map(loop$list, loop$fun, loop$acc) {
+  while (true) {
+    let list = loop$list;
+    let fun = loop$fun;
+    let acc = loop$acc;
+    if (list.hasLength(0)) {
+      return reverse(acc);
+    } else {
+      let x = list.head;
+      let xs = list.tail;
+      loop$list = xs;
+      loop$fun = fun;
+      loop$acc = prepend(fun(x), acc);
+    }
+  }
+}
+function map(list, fun) {
+  return do_map(list, fun, toList([]));
+}
+function do_append(loop$first, loop$second) {
+  while (true) {
+    let first = loop$first;
+    let second = loop$second;
+    if (first.hasLength(0)) {
+      return second;
+    } else {
+      let item = first.head;
+      let rest$1 = first.tail;
+      loop$first = rest$1;
+      loop$second = prepend(item, second);
+    }
+  }
+}
+function append(first, second) {
+  return do_append(reverse(first), second);
+}
+function do_intersperse(loop$list, loop$separator, loop$acc) {
+  while (true) {
+    let list = loop$list;
+    let separator = loop$separator;
+    let acc = loop$acc;
+    if (list.hasLength(0)) {
+      return reverse(acc);
+    } else {
+      let x = list.head;
+      let rest$1 = list.tail;
+      loop$list = rest$1;
+      loop$separator = separator;
+      loop$acc = prepend(x, prepend(separator, acc));
+    }
+  }
+}
+function intersperse(list, elem) {
+  if (list.hasLength(0)) {
+    return list;
+  } else if (list.hasLength(1)) {
+    return list;
+  } else {
+    let x = list.head;
+    let rest$1 = list.tail;
+    return do_intersperse(rest$1, elem, toList([x]));
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/result.mjs
+function map2(result, fun) {
+  if (result.isOk()) {
+    let x = result[0];
+    return new Ok(fun(x));
+  } else {
+    let e = result[0];
+    return new Error2(e);
+  }
+}
+function map_error(result, fun) {
+  if (result.isOk()) {
+    let x = result[0];
+    return new Ok(x);
+  } else {
+    let error = result[0];
+    return new Error2(fun(error));
+  }
+}
+function try$(result, fun) {
+  if (result.isOk()) {
+    let x = result[0];
+    return fun(x);
+  } else {
+    let e = result[0];
+    return new Error2(e);
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/string_builder.mjs
+function from_strings(strings) {
+  return concat(strings);
+}
+function from_string(string3) {
+  return identity(string3);
+}
+function to_string3(builder) {
+  return identity(builder);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/dynamic.mjs
+var DecodeError = class extends CustomType {
+  constructor(expected, found, path) {
+    super();
+    this.expected = expected;
+    this.found = found;
+    this.path = path;
+  }
+};
+function from(a) {
+  return identity(a);
+}
+function string(data) {
+  return decode_string(data);
+}
+function classify(data) {
+  return classify_dynamic(data);
+}
+function int(data) {
+  return decode_int(data);
+}
+function any(decoders) {
+  return (data) => {
+    if (decoders.hasLength(0)) {
+      return new Error2(
+        toList([new DecodeError("another type", classify(data), toList([]))])
+      );
+    } else {
+      let decoder = decoders.head;
+      let decoders$1 = decoders.tail;
+      let $ = decoder(data);
+      if ($.isOk()) {
+        let decoded = $[0];
+        return new Ok(decoded);
+      } else {
+        return any(decoders$1)(data);
+      }
+    }
+  };
+}
+function push_path(error, name) {
+  let name$1 = from(name);
+  let decoder = any(
+    toList([string, (x) => {
+      return map2(int(x), to_string2);
+    }])
+  );
+  let name$2 = (() => {
+    let $ = decoder(name$1);
+    if ($.isOk()) {
+      let name$22 = $[0];
+      return name$22;
+    } else {
+      let _pipe = toList(["<", classify(name$1), ">"]);
+      let _pipe$1 = from_strings(_pipe);
+      return to_string3(_pipe$1);
+    }
+  })();
+  return error.withFields({ path: prepend(name$2, error.path) });
+}
+function map_errors(result, f) {
+  return map_error(
+    result,
+    (_capture) => {
+      return map(_capture, f);
+    }
+  );
+}
+function field(name, inner_type) {
+  return (value2) => {
+    let missing_field_error = new DecodeError("field", "nothing", toList([]));
+    return try$(
+      decode_field(value2, name),
+      (maybe_inner) => {
+        let _pipe = maybe_inner;
+        let _pipe$1 = to_result(_pipe, toList([missing_field_error]));
+        let _pipe$2 = try$(_pipe$1, inner_type);
+        return map_errors(
+          _pipe$2,
+          (_capture) => {
+            return push_path(_capture, name);
+          }
+        );
+      }
+    );
+  };
+}
+
+// build/dev/javascript/gleam_javascript/ffi.mjs
+var PromiseLayer = class _PromiseLayer {
+  constructor(promise) {
+    this.promise = promise;
+  }
+  static wrap(value2) {
+    return value2 instanceof Promise ? new _PromiseLayer(value2) : value2;
+  }
+  static unwrap(value2) {
+    return value2 instanceof _PromiseLayer ? value2.promise : value2;
+  }
+};
+function map_promise(promise, fn) {
+  return promise.then(
+    (value2) => PromiseLayer.wrap(fn(PromiseLayer.unwrap(value2)))
+  );
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/iterator.mjs
@@ -1411,14 +1429,14 @@ function take(iterator, desired) {
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
-function length2(string3) {
+function length3(string3) {
   return string_length(string3);
 }
 function replace(string3, pattern, substitute) {
   let _pipe = string3;
   let _pipe$1 = from_string(_pipe);
   let _pipe$2 = string_replace(_pipe$1, pattern, substitute);
-  return to_string(_pipe$2);
+  return to_string3(_pipe$2);
 }
 function lowercase2(string3) {
   return lowercase(string3);
@@ -1426,7 +1444,7 @@ function lowercase2(string3) {
 function concat3(strings) {
   let _pipe = strings;
   let _pipe$1 = from_strings(_pipe);
-  return to_string(_pipe$1);
+  return to_string3(_pipe$1);
 }
 function repeat2(string3, times) {
   let _pipe = repeat(string3);
@@ -1452,10 +1470,10 @@ var Concat = class extends CustomType {
   }
 };
 var Text = class extends CustomType {
-  constructor(text2, length3) {
+  constructor(text2, length4) {
     super();
     this.text = text2;
-    this.length = length3;
+    this.length = length4;
   }
 };
 var Nest = class extends CustomType {
@@ -1512,7 +1530,7 @@ function concat4(docs) {
   return new Concat(docs);
 }
 function from_string2(string3) {
-  return new Text(string3, length2(string3));
+  return new Text(string3, length3(string3));
 }
 function group(doc) {
   return new Group(doc);
@@ -1550,10 +1568,10 @@ function fits(loop$docs, loop$max_width, loop$current_width) {
       } else if (doc instanceof ForceBreak) {
         return false;
       } else if (doc instanceof Text) {
-        let length3 = doc.length;
+        let length4 = doc.length;
         loop$docs = rest;
         loop$max_width = max_width;
-        loop$current_width = current_width + length3;
+        loop$current_width = current_width + length4;
       } else if (doc instanceof Nest) {
         let doc$1 = doc.doc;
         let i = doc.indentation;
@@ -1570,7 +1588,7 @@ function fits(loop$docs, loop$max_width, loop$current_width) {
         } else {
           loop$docs = rest;
           loop$max_width = max_width;
-          loop$current_width = current_width + length2(unbroken);
+          loop$current_width = current_width + length3(unbroken);
         }
       } else if (doc instanceof FlexBreak) {
         let unbroken = doc.unbroken;
@@ -1581,7 +1599,7 @@ function fits(loop$docs, loop$max_width, loop$current_width) {
         } else {
           loop$docs = rest;
           loop$max_width = max_width;
-          loop$current_width = current_width + length2(unbroken);
+          loop$current_width = current_width + length3(unbroken);
         }
       } else if (doc instanceof Group) {
         let doc$1 = doc.doc;
@@ -1627,7 +1645,7 @@ function do_to_string(loop$acc, loop$max_width, loop$current_width, loop$docs) {
       } else if (doc instanceof FlexBreak) {
         let unbroken = doc.unbroken;
         let broken = doc.broken;
-        let new_unbroken_width = current_width + length2(unbroken);
+        let new_unbroken_width = current_width + length3(unbroken);
         let $ = fits(rest, max_width, new_unbroken_width);
         if ($) {
           let _pipe = acc + unbroken;
@@ -1646,7 +1664,7 @@ function do_to_string(loop$acc, loop$max_width, loop$current_width, loop$docs) {
         let unbroken = doc.unbroken;
         let broken = doc.broken;
         if (mode instanceof Unbroken) {
-          let new_width = current_width + length2(unbroken);
+          let new_width = current_width + length3(unbroken);
           loop$acc = acc + unbroken;
           loop$max_width = max_width;
           loop$current_width = new_width;
@@ -1715,10 +1733,10 @@ function do_to_string(loop$acc, loop$max_width, loop$current_width, loop$docs) {
         loop$docs = docs$1;
       } else {
         let text2 = doc.text;
-        let length3 = doc.length;
+        let length4 = doc.length;
         loop$acc = acc + text2;
         loop$max_width = max_width;
-        loop$current_width = current_width + length3;
+        loop$current_width = current_width + length4;
         loop$docs = rest;
       }
     }
@@ -2863,6 +2881,11 @@ var Effect = class extends CustomType {
     this.all = all;
   }
 };
+function from2(effect) {
+  return new Effect(toList([(dispatch, _) => {
+    return effect(dispatch);
+  }]));
+}
 function none() {
   return new Effect(toList([]));
 }
@@ -3405,15 +3428,6 @@ var NotABrowser = class extends CustomType {
 function application(init3, update3, view2) {
   return new App(init3, update3, view2, new None());
 }
-function simple(init3, update3, view2) {
-  let init$1 = (flags) => {
-    return [init3(flags), none()];
-  };
-  let update$1 = (model, msg) => {
-    return [update3(model, msg), none()];
-  };
-  return application(init$1, update$1, view2);
-}
 function start3(app, selector, flags) {
   return guard(
     !is_browser(),
@@ -3434,6 +3448,9 @@ function section(attrs, children) {
 function div(attrs, children) {
   return element("div", attrs, children);
 }
+function button(attrs, children) {
+  return element("button", attrs, children);
+}
 function textarea(attrs, content) {
   return element("textarea", attrs, toList([text(content)]));
 }
@@ -3441,6 +3458,11 @@ function textarea(attrs, content) {
 // build/dev/javascript/lustre/lustre/event.mjs
 function on2(name, handler) {
   return on(name, handler);
+}
+function on_click(msg) {
+  return on2("click", (_) => {
+    return new Ok(msg);
+  });
 }
 function value(event2) {
   let _pipe = event2;
@@ -3458,11 +3480,26 @@ function on_input(msg) {
   );
 }
 
+// build/dev/javascript/plinth/clipboard_ffi.mjs
+async function writeText(clipText) {
+  try {
+    return new Ok(await window.navigator.clipboard.writeText(clipText));
+  } catch (error) {
+    return new Error2(error.toString());
+  }
+}
+
+// build/dev/javascript/plinth/global_ffi.mjs
+function setTimeout(callback, delay) {
+  globalThis.setTimeout(callback, delay);
+}
+
 // build/dev/javascript/app/app.mjs
 var Model = class extends CustomType {
-  constructor(rendered_lustre) {
+  constructor(rendered_lustre, copy_button_text) {
     super();
     this.rendered_lustre = rendered_lustre;
+    this.copy_button_text = copy_button_text;
   }
 };
 var UserUpdatedHtml = class extends CustomType {
@@ -3471,14 +3508,10 @@ var UserUpdatedHtml = class extends CustomType {
     this[0] = x0;
   }
 };
-function init2(_) {
-  return new Model("");
-}
-function update2(_, msg) {
-  let html = msg[0];
-  let html$1 = convert(html);
-  return new Model(html$1);
-}
+var UserClickedCopy = class extends CustomType {
+};
+var CopyFeedbackWindowEnded = class extends CustomType {
+};
 function layout(children) {
   return div(
     toList([]),
@@ -3510,7 +3543,7 @@ function view(model) {
                 toList([
                   class$("bg-transparent p-4 block w-full h-full"),
                   placeholder(
-                    "Hello! Paste your HTML here and I'll convert it to Lustre"
+                    "Hello!\nPaste your HTML here and I'll convert it to Lustre"
                   ),
                   on_input(
                     (var0) => {
@@ -3525,7 +3558,7 @@ function view(model) {
           section(
             toList([
               class$(
-                "bg-[#282c34] border-2 border-l-1 border-[#ffaff3]"
+                "bg-[#282c34] border-2 border-l-1 border-[#ffaff3] relative"
               )
             ]),
             toList([
@@ -3536,6 +3569,15 @@ function view(model) {
                   )
                 ]),
                 model.rendered_lustre
+              ),
+              button(
+                toList([
+                  on_click(new UserClickedCopy()),
+                  class$(
+                    "absolute bottom-3 right-3 bg-[#ffaff3] py-2 px-3 rounded-md font-bold transition-opacity hover:opacity-75"
+                  )
+                ]),
+                toList([text(model.copy_button_text)])
               )
             ])
           )
@@ -3544,14 +3586,60 @@ function view(model) {
     ])
   );
 }
+function set_timeout(delay, callback) {
+  let callback$1 = (_) => {
+    callback();
+    return void 0;
+  };
+  return setTimeout(callback$1, delay);
+}
+function copy_to_clipboard(dispatch, text2) {
+  map_promise(
+    writeText(text2),
+    (_) => {
+      return set_timeout(
+        1e3,
+        () => {
+          return dispatch(new CopyFeedbackWindowEnded());
+        }
+      );
+    }
+  );
+  return void 0;
+}
+var copy_button_default_text = "Copy \u{1F9DF}";
+function init2(_) {
+  let model = new Model("", copy_button_default_text);
+  return [model, none()];
+}
+var copy_button_copied_text = "Copied \u{1F970}";
+function update2(model, msg) {
+  if (msg instanceof UserClickedCopy) {
+    let copy_effect = from2(
+      (_capture) => {
+        return copy_to_clipboard(_capture, model.rendered_lustre);
+      }
+    );
+    let model$1 = model.withFields({ copy_button_text: copy_button_copied_text });
+    return [model$1, copy_effect];
+  } else if (msg instanceof CopyFeedbackWindowEnded) {
+    let model$1 = model.withFields({ copy_button_text: copy_button_default_text });
+    return [model$1, none()];
+  } else {
+    let html = msg[0];
+    let html$1 = convert(html);
+    let model$1 = model.withFields({ rendered_lustre: html$1 });
+    return [model$1, none()];
+  }
+}
 function main() {
-  let app = simple(init2, update2, view);
+  let app = application(init2, update2, view);
   let $ = start3(app, "#app", void 0);
   if (!$.isOk()) {
     throw makeError(
       "assignment_no_match",
       "app",
-      10,
+      14,
       "main",
       "Assignment pattern did not match",
       { value: $ }

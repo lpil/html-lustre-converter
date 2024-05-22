@@ -1,34 +1,58 @@
+import gleam/javascript/promise
 import html_lustre_converter
 import lustre
 import lustre/attribute
+import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
+import plinth/browser/clipboard
+import plinth/javascript/global
 
 pub fn main() {
-  let app = lustre.simple(init, update, view)
+  let app = lustre.application(init, update, view)
   let assert Ok(_) = lustre.start(app, "#app", Nil)
 
   Nil
 }
 
 pub type Model {
-  Model(rendered_lustre: String)
+  Model(rendered_lustre: String, copy_button_text: String)
 }
 
-fn init(_flags) -> Model {
-  Model(rendered_lustre: "")
+const copy_button_default_text = "Copy 🧟"
+
+const copy_button_copied_text = "Copied 🥰"
+
+fn init(_flags) -> #(Model, Effect(e)) {
+  let model =
+    Model(rendered_lustre: "", copy_button_text: copy_button_default_text)
+  #(model, effect.none())
 }
 
 pub type Msg {
   UserUpdatedHtml(String)
+  UserClickedCopy
+  CopyFeedbackWindowEnded
 }
 
-pub fn update(_model: Model, msg: Msg) -> Model {
+pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
+    UserClickedCopy -> {
+      let copy_effect = effect.from(copy_to_clipboard(_, model.rendered_lustre))
+      let model = Model(..model, copy_button_text: copy_button_copied_text)
+      #(model, copy_effect)
+    }
+
+    CopyFeedbackWindowEnded -> {
+      let model = Model(..model, copy_button_text: copy_button_default_text)
+      #(model, effect.none())
+    }
+
     UserUpdatedHtml(html) -> {
       let html = html_lustre_converter.convert(html)
-      Model(rendered_lustre: html)
+      let model = Model(..model, rendered_lustre: html)
+      #(model, effect.none())
     }
   }
 }
@@ -47,7 +71,7 @@ fn view(model: Model) -> Element(Msg) {
             [
               attribute.class("bg-transparent p-4 block w-full h-full"),
               attribute.placeholder(
-                "Hello! Paste your HTML here and I'll convert it to Lustre",
+                "Hello!\nPaste your HTML here and I'll convert it to Lustre",
               ),
               event.on_input(UserUpdatedHtml),
             ],
@@ -56,7 +80,11 @@ fn view(model: Model) -> Element(Msg) {
         ],
       ),
       html.section(
-        [attribute.class("bg-[#282c34] border-2 border-l-1 border-[#ffaff3]")],
+        [
+          attribute.class(
+            "bg-[#282c34] border-2 border-l-1 border-[#ffaff3] relative",
+          ),
+        ],
         [
           html.textarea(
             [
@@ -65,6 +93,15 @@ fn view(model: Model) -> Element(Msg) {
               ),
             ],
             model.rendered_lustre,
+          ),
+          html.button(
+            [
+              event.on_click(UserClickedCopy),
+              attribute.class(
+                "absolute bottom-3 right-3 bg-[#ffaff3] py-2 px-3 rounded-md font-bold transition-opacity hover:opacity-75",
+              ),
+            ],
+            [element.text(model.copy_button_text)],
           ),
         ],
       ),
@@ -80,4 +117,21 @@ fn layout(children: List(Element(a))) -> Element(a) {
     ]),
     ..children
   ])
+}
+
+fn copy_to_clipboard(dispatch: fn(Msg) -> Nil, text: String) -> Nil {
+  {
+    use _ <- promise.map(clipboard.write_text(text))
+    use <- set_timeout(1000)
+    dispatch(CopyFeedbackWindowEnded)
+  }
+  Nil
+}
+
+fn set_timeout(delay: Int, callback: fn() -> anything) -> Nil {
+  let callback = fn(_) {
+    callback()
+    Nil
+  }
+  global.set_timeout(callback, delay)
 }
