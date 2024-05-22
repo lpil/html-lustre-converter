@@ -1,0 +1,50 @@
+name: deploy
+on:
+  push:
+    branches: ["main"]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "26.0.2"
+          gleam-version: "1.1.0"
+          rebar3-version: "3"
+
+      - name: Build site
+        run: |
+          cd app
+          gleam run -m lustre/dev -- build app --minify
+          # TODO: remove once Lustre dev tools have a way to build deploy ready code
+          cat index.html | sed 's|priv/static/app.css|app.min.css|' | sed 's|priv/static/app.mjs|app.min.mjs|' > priv/static/index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'app/priv/static'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

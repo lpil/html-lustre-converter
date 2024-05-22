@@ -12,7 +12,6 @@ import plinth/javascript/global
 pub fn main() {
   let app = lustre.application(init, update, view)
   let assert Ok(_) = lustre.start(app, "#app", Nil)
-
   Nil
 }
 
@@ -58,64 +57,52 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 }
 
 fn view(model: Model) -> Element(Msg) {
-  layout([
-    html.div([attribute.class("grid grid-cols-2 font-mono h-screen")], [
-      html.section(
-        [
-          attribute.class(
-            "block w-full h-full border-2 border-r-1 border-[#ffaff3]",
-          ),
-        ],
-        [
-          html.textarea(
-            [
-              attribute.class("bg-transparent p-4 block w-full h-full"),
-              attribute.placeholder(
-                "Hello!\nPaste your HTML here and I'll convert it to Lustre",
-              ),
-              event.on_input(UserUpdatedHtml),
-            ],
-            "",
-          ),
-        ],
-      ),
-      html.section(
-        [
-          attribute.class(
-            "bg-[#282c34] border-2 border-l-1 border-[#ffaff3] relative",
-          ),
-        ],
-        [
-          html.textarea(
-            [
-              attribute.class(
-                "bg-transparent text-gray-300 p-4 block w-full h-full",
-              ),
-            ],
-            model.rendered_lustre,
-          ),
-          html.button(
-            [
-              event.on_click(UserClickedCopy),
-              attribute.class(
-                "absolute bottom-3 right-3 bg-[#ffaff3] py-2 px-3 rounded-md font-bold transition-opacity hover:opacity-75",
-              ),
-            ],
-            [element.text(model.copy_button_text)],
-          ),
-        ],
-      ),
-    ]),
-  ])
-}
-
-fn layout(children: List(Element(a))) -> Element(a) {
-  html.div([], [
-    html.link([
-      attribute.rel("stylesheet"),
-      attribute.href("priv/static/app.css"),
-    ]),
-    ..children
+  html.div([attribute.class("grid grid-cols-2 font-mono h-screen")], [
+    html.section(
+      [
+        attribute.class(
+          "block w-full h-full border-2 border-r-1 border-[#ffaff3]",
+        ),
+      ],
+      [
+        html.textarea(
+          [
+            attribute.class("bg-transparent p-4 block w-full h-full"),
+            attribute.placeholder(
+              "Hello!\nPaste your HTML here and I'll convert it to Lustre",
+            ),
+            event.on_input(UserUpdatedHtml),
+          ],
+          "",
+        ),
+      ],
+    ),
+    html.section(
+      [
+        attribute.class(
+          "bg-[#282c34] border-2 border-l-1 border-[#ffaff3] relative",
+        ),
+      ],
+      [
+        html.textarea(
+          [
+            attribute.class(
+              "bg-transparent text-gray-300 p-4 block w-full h-full",
+            ),
+          ],
+          model.rendered_lustre,
+        ),
+        html.button(
+          [
+            event.on_click(UserClickedCopy),
+            attribute.class(
+              "absolute bottom-3 right-3 bg-[#ffaff3] py-2 px-3 rounded-md font-bold transition-opacity hover:opacity-75",
+            ),
+          ],
+          [element.text(model.copy_button_text)],
+        ),
+      ],
+    ),
   ])
 }
 
