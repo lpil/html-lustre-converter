@@ -2,8 +2,8 @@
 
 The Lustreizer. Convert regular HTML markup into Lustre syntax.
 
-[![Package Version](https://img.shields.io/hexpm/v/lustreizer)](https://hex.pm/packages/lustreizer)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/lustreizer/)
+[![Package Version](https://img.shields.io/hexpm/v/html_lustre_converter)](https://hex.pm/packages/html_lustre_converter)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/html_lustre_converter/)
 
 This package depends on the `javascript_dom_parser` package, which only works in
 the browser. If you wish to run this using the Deno runtime you will need to
