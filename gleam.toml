@@ -2,7 +2,7 @@ name = "html_lustre_converter"
 version = "1.0.0"
 description = "Convert regular HTML markup into Lustre syntax"
 licences = ["Apache-2.0"]
-repository = { type = "github", user = "lpil", repo = "html_lustre_converter" }
+repository = { type = "github", user = "lpil", repo = "html-lustre-converter" }
 links = [{ title = "Lustre", href = "https://lustre.build" }]
 
 target = "javascript"
