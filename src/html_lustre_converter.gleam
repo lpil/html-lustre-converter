@@ -1,7 +1,9 @@
 import glam/doc.{type Document}
 import gleam/list
+import gleam/io
 import gleam/string
 import javascript_dom_parser.{type HtmlNode, Comment, Element, Text} as parser
+import justin
 
 /// Convert a string of HTML in to the same document but using the Lustre HTML
 /// syntax.
@@ -12,6 +14,13 @@ import javascript_dom_parser.{type HtmlNode, Comment, Element, Text} as parser
 /// import lustre/element/html
 /// import lustre/attribute.{attribute}
 /// import lustre/element.{element, text}
+/// ```
+///
+/// If the source document contains SVGs, we need one more import:
+/// ```gleam
+/// import lustre/element/svg
+/// // or 
+/// import lustre/element.{element, text, svg}
 /// ```
 ///
 pub fn convert(html: String) -> String {
@@ -81,7 +90,7 @@ fn print_element(
       doc.from_string("html." <> tag <> "(")
       |> doc.append(attributes)
       |> doc.append(doc.from_string(")"))
-    }
+    } 
 
     "a"
     | "abbr"
@@ -168,7 +177,6 @@ fn print_element(
     | "sub"
     | "summary"
     | "sup"
-    | "svg"
     | "table"
     | "tbody"
     | "td"
@@ -202,6 +210,93 @@ fn print_element(
       |> doc.append(wrap([attributes, content], "(", ")"))
     }
 
+    // SVG non-container elements
+    // Anmation elements
+    "animate"
+    | "animateMotion"
+    | "animateTransform"
+    | "mpath"
+    | "set"
+    // Basic shapes
+    | "circle"
+    | "ellipse"
+    | "line"
+    | "polygon"
+    | "polyline"
+    | "rect"
+    // Filter effects
+    | "feBlend"
+    | "feColorMatrix"
+    | "feComponentTransfer"
+    | "feComposite"
+    | "feConvolveMatrix"
+    | "feDisplacementMap"
+    | "feDropShadow"
+    | "feFlood"
+    | "feFuncA"
+    | "feFuncB"
+    | "feFuncG"
+    | "feFuncR"
+    | "feGaussianBlur"
+    | "feImage"
+    | "feMergeNode"
+    | "feMorphology"
+    | "feOffset"
+    | "feTurbulance"
+    // Gradient elements
+    | "stop"
+    // Graphical elements
+    | "image"
+    | "path"
+    // Lighting elements
+    | "feDistantLight"
+    | "fePointLight"
+    | "feSpotLight" -> {
+      doc.from_string("svg." <> tag <> "(")
+      |> doc.append(attributes)
+      |> doc.append(doc.from_string(")"))
+    }
+
+
+    // TODO: Implement this properly
+//    "text" -> {
+//        doc.from_string("text")
+//        |> doc.append("")
+//    }
+
+    "use" -> {
+      doc.from_string("svg.use_")
+      |> doc.append(attributes)
+    }
+
+    // SVG container elements
+    "defs"
+    | "g"
+    | "marker"
+    | "mask"
+    | "missing-glyph"
+    | "pattern"
+    | "svg"
+    | "switch"
+    | "symbol"
+    // Descriptive elements
+    //  TODO: SVG title element
+    | "desc"
+    | "metadata"
+    // Filter effects
+    | "feDiffuseLighting"
+    | "feMerge"
+    | "feSpecularLighting"
+    | "feTile"
+    // Gradient Elements
+    | "linearGradient"
+    | "radialGradient"
+    -> {
+      let children = wrap(print_children(children, ws), "[", "]")
+      doc.from_string("svg." <> justin.snake_case(tag))
+      |> doc.append(wrap([attributes, children], "(", ")"))
+    }
+
     _ -> {
       let children = wrap(print_children(children, ws), "[", "]")
       let tag = doc.from_string(print_string(tag))
@@ -225,6 +320,9 @@ fn print_children(
   children: List(HtmlNode),
   ws: WhitespaceMode,
 ) -> List(Document) {
+    // TODO: handle is_svg
+    // io.debug(is_svg)
+
   list.filter_map(children, fn(node) {
     case node {
       Element(a, b, c) -> Ok(print_element(a, b, c, ws))
@@ -296,7 +394,6 @@ fn print_attribute(attribute: #(String, String)) -> Document {
     "width" | "height" | "cols" | "rows" -> {
       doc.from_string("attribute." <> attribute.0 <> "(" <> attribute.1 <> ")")
     }
-
     _ -> {
       let children = [
         doc.from_string(print_string(attribute.0)),
