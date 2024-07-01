@@ -1,6 +1,5 @@
 import glam/doc.{type Document}
 import gleam/list
-import gleam/io
 import gleam/string
 import javascript_dom_parser.{type HtmlNode, Comment, Element, Text} as parser
 import justin
@@ -28,7 +27,7 @@ pub fn convert(html: String) -> String {
     html
     |> parser.parse_to_records
     |> strip_body_wrapper(html)
-    |> print_children(StripWhitespace)
+    |> print_children(StripWhitespace, False)
 
   case documents {
     [] -> doc.empty
@@ -61,7 +60,7 @@ fn print_string(t: String) -> String {
   "\"" <> string.replace(t, "\"", "\\\"") <> "\""
 }
 
-fn print_element(
+fn print_svg_element(
   tag: String,
   attributes: List(#(String, String)),
   children: List(HtmlNode),
@@ -69,7 +68,111 @@ fn print_element(
 ) -> Document {
   let tag = string.lowercase(tag)
   let attributes =
-    list.map(attributes, print_attribute)
+    list.map(attributes, fn(a) { print_attribute(a, True) })
+    |> wrap("[", "]")
+
+  case tag {
+    // SVG non-container elements
+    // Anmation elements
+    "animate"
+    | "animatemotion"
+    | "animatetransform"
+    | "mpath"
+    | "set"
+    | // Basic shapes
+      "circle"
+    | "ellipse"
+    | "line"
+    | "polygon"
+    | "polyline"
+    | "rect"
+    | // Filter effects
+      "feblend"
+    | "fecolormatrix"
+    | "fecomponenttransfer"
+    | "fecomposite"
+    | "feconvolvematrix"
+    | "fedisplacementmap"
+    | "fedropshadow"
+    | "feflood"
+    | "fefunca"
+    | "fefuncb"
+    | "fefuncg"
+    | "fefuncr"
+    | "fegaussianblur"
+    | "feimage"
+    | "femergenode"
+    | "femorphology"
+    | "feoffset"
+    | "feturbulance"
+    | // Gradient elements
+      "stop"
+    | // Graphical elements
+      "image"
+    | "path"
+    | // Lighting elements
+      "fedistantlight"
+    | "fepointlight"
+    | "fespotlight" -> {
+      doc.from_string("svg." <> justin.snake_case(tag) <> "(")
+      |> doc.append(attributes)
+      |> doc.append(doc.from_string(")"))
+    }
+
+    // TODO: Implement this properly
+    //    "text" -> {
+    //        doc.from_string("text")
+    //        |> doc.append("")
+    //    }
+    "use" -> {
+      doc.from_string("svg.use_")
+      |> doc.append(attributes)
+    }
+
+    // SVG container elements
+    "defs"
+    | "g"
+    | "marker"
+    | "mask"
+    | "missing-glyph"
+    | "pattern"
+    | "switch"
+    | "symbol"
+    | // Descriptive elements
+      //  TODO: SVG title element
+      "desc"
+    | "metadata"
+    | // Filter effects
+      "fediffuselighting"
+    | "femerge"
+    | "fespecularlighting"
+    | "fetile"
+    | // Gradient Elements
+      "lineargradient"
+    | "radialgradient" -> {
+      let children = wrap(print_children(children, ws, True), "[", "]")
+      doc.from_string("svg." <> justin.snake_case(tag))
+      |> doc.append(wrap([attributes, children], "(", ")"))
+    }
+
+    _ -> {
+      let children = wrap(print_children(children, ws, True), "[", "]")
+      let tag = doc.from_string(print_string(tag))
+      doc.from_string("element")
+      |> doc.append(wrap([tag, attributes, children], "(", ")"))
+    }
+  }
+}
+
+fn print_element(
+  tag: String,
+  given_attributes: List(#(String, String)),
+  children: List(HtmlNode),
+  ws: WhitespaceMode,
+) -> Document {
+  let tag = string.lowercase(tag)
+  let attributes =
+    list.map(given_attributes, fn(a) { print_attribute(a, False) })
     |> wrap("[", "]")
 
   case tag {
@@ -90,7 +193,7 @@ fn print_element(
       doc.from_string("html." <> tag <> "(")
       |> doc.append(attributes)
       |> doc.append(doc.from_string(")"))
-    } 
+    }
 
     "a"
     | "abbr"
@@ -192,14 +295,26 @@ fn print_element(
     | "ul"
     | "var"
     | "video" -> {
-      let children = wrap(print_children(children, ws), "[", "]")
+      let children = wrap(print_children(children, ws, False), "[", "]")
       doc.from_string("html." <> tag)
+      |> doc.append(wrap([attributes, children], "(", ")"))
+    }
+
+    "svg" -> {
+      // TODO: Fix double compute, avoid initial compute if we don't go to SVG land
+      let attributes =
+        list.map(given_attributes, fn(a) { print_attribute(a, True) })
+        |> wrap("[", "]")
+
+
+      let children = wrap(print_children(children, ws, True), "[", "]")
+      doc.from_string("svg.svg")
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
 
     "pre" -> {
       let children =
-        wrap(print_children(children, PreserveWhitespace), "[", "]")
+        wrap(print_children(children, PreserveWhitespace, False), "[", "]")
       doc.from_string("html." <> tag)
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
@@ -210,95 +325,8 @@ fn print_element(
       |> doc.append(wrap([attributes, content], "(", ")"))
     }
 
-    // SVG non-container elements
-    // Anmation elements
-    "animate"
-    | "animateMotion"
-    | "animateTransform"
-    | "mpath"
-    | "set"
-    // Basic shapes
-    | "circle"
-    | "ellipse"
-    | "line"
-    | "polygon"
-    | "polyline"
-    | "rect"
-    // Filter effects
-    | "feBlend"
-    | "feColorMatrix"
-    | "feComponentTransfer"
-    | "feComposite"
-    | "feConvolveMatrix"
-    | "feDisplacementMap"
-    | "feDropShadow"
-    | "feFlood"
-    | "feFuncA"
-    | "feFuncB"
-    | "feFuncG"
-    | "feFuncR"
-    | "feGaussianBlur"
-    | "feImage"
-    | "feMergeNode"
-    | "feMorphology"
-    | "feOffset"
-    | "feTurbulance"
-    // Gradient elements
-    | "stop"
-    // Graphical elements
-    | "image"
-    | "path"
-    // Lighting elements
-    | "feDistantLight"
-    | "fePointLight"
-    | "feSpotLight" -> {
-      doc.from_string("svg." <> tag <> "(")
-      |> doc.append(attributes)
-      |> doc.append(doc.from_string(")"))
-    }
-
-
-    // TODO: Implement this properly
-//    "text" -> {
-//        doc.from_string("text")
-//        |> doc.append("")
-//    }
-
-    "use" -> {
-      doc.from_string("svg.use_")
-      |> doc.append(attributes)
-    }
-
-    // SVG container elements
-    "defs"
-    | "g"
-    | "marker"
-    | "mask"
-    | "missing-glyph"
-    | "pattern"
-    | "svg"
-    | "switch"
-    | "symbol"
-    // Descriptive elements
-    //  TODO: SVG title element
-    | "desc"
-    | "metadata"
-    // Filter effects
-    | "feDiffuseLighting"
-    | "feMerge"
-    | "feSpecularLighting"
-    | "feTile"
-    // Gradient Elements
-    | "linearGradient"
-    | "radialGradient"
-    -> {
-      let children = wrap(print_children(children, ws), "[", "]")
-      doc.from_string("svg." <> justin.snake_case(tag))
-      |> doc.append(wrap([attributes, children], "(", ")"))
-    }
-
     _ -> {
-      let children = wrap(print_children(children, ws), "[", "]")
+      let children = wrap(print_children(children, ws, False), "[", "]")
       let tag = doc.from_string(print_string(tag))
       doc.from_string("element")
       |> doc.append(wrap([tag, attributes, children], "(", ")"))
@@ -319,13 +347,16 @@ fn get_text_content(nodes: List(HtmlNode)) -> String {
 fn print_children(
   children: List(HtmlNode),
   ws: WhitespaceMode,
+  is_svg: Bool,
 ) -> List(Document) {
-    // TODO: handle is_svg
-    // io.debug(is_svg)
-
   list.filter_map(children, fn(node) {
     case node {
-      Element(a, b, c) -> Ok(print_element(a, b, c, ws))
+      Element(tag, attrs, children) -> {
+        case is_svg {
+          True -> Ok(print_svg_element(tag, attrs, children, ws))
+          False -> Ok(print_element(tag, attrs, children, ws))
+        }
+      }
       Comment(_) -> Error(Nil)
       Text(t) if ws == StripWhitespace -> {
         case string.trim_left(t) {
@@ -338,7 +369,7 @@ fn print_children(
   })
 }
 
-fn print_attribute(attribute: #(String, String)) -> Document {
+fn print_attribute(attribute: #(String, String), is_svg: Bool) -> Document {
   case attribute.0 {
     "action"
     | "alt"
@@ -392,8 +423,22 @@ fn print_attribute(attribute: #(String, String)) -> Document {
     }
 
     "width" | "height" | "cols" | "rows" -> {
-      doc.from_string("attribute." <> attribute.0 <> "(" <> attribute.1 <> ")")
+      case is_svg {
+        True -> {
+          let children = [
+            doc.from_string(print_string(attribute.0)),
+            doc.from_string(print_string(attribute.1)),
+          ]
+          doc.from_string("attribute")
+          |> doc.append(wrap(children, "(", ")"))
+        }
+        False ->
+          doc.from_string(
+            "attribute." <> attribute.0 <> "(" <> attribute.1 <> ")",
+          )
+      }
     }
+
     _ -> {
       let children = [
         doc.from_string(print_string(attribute.0)),
