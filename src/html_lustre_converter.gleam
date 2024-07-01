@@ -407,6 +407,9 @@ fn print_attribute(attribute: #(String, String), is_svg: Bool) -> Document {
       )
     }
 
+    "viewbox" ->
+        doc.from_string("attribute(\"viewBox\", " <> print_string(attribute.1) <> ")")
+
     "type" ->
       doc.from_string("attribute.type_(" <> print_string(attribute.1) <> ")")
 
