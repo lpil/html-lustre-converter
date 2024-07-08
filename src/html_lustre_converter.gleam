@@ -15,11 +15,14 @@ import justin
 /// import lustre/element.{element, text}
 /// ```
 ///
-/// If the source document contains SVGs, we need one more import:
+/// If the source document contains SVGs, we need one more import from lustre/element:
+/// ```gleam
+/// import lustre/element.{element, text, svg}
+/// ```
+/// 
+/// If you are only using SVGs, that's all you need to import
 /// ```gleam
 /// import lustre/element/svg
-/// // or 
-/// import lustre/element.{element, text, svg}
 /// ```
 ///
 pub fn convert(html: String) -> String {
@@ -27,7 +30,7 @@ pub fn convert(html: String) -> String {
     html
     |> parser.parse_to_records
     |> strip_body_wrapper(html)
-    |> print_children(StripWhitespace, False)
+    |> print_children(StripWhitespace, HTML)
 
   case documents {
     [] -> doc.empty
@@ -40,6 +43,11 @@ pub fn convert(html: String) -> String {
 type WhitespaceMode {
   PreserveWhitespace
   StripWhitespace
+}
+
+type OutputMode {
+  SVG
+  HTML
 }
 
 fn strip_body_wrapper(html: HtmlNode, source: String) -> List(HtmlNode) {
@@ -68,7 +76,7 @@ fn print_svg_element(
 ) -> Document {
   let tag = string.lowercase(tag)
   let attributes =
-    list.map(attributes, fn(a) { print_attribute(a, True) })
+    list.map(attributes, fn(a) { print_attribute(a, SVG) })
     |> wrap("[", "]")
 
   case tag {
@@ -113,17 +121,19 @@ fn print_svg_element(
     | // Lighting elements
       "fedistantlight"
     | "fepointlight"
-    | "fespotlight" -> {
+    | "fespotlight"
+    | "title" -> {
       doc.from_string("svg." <> justin.snake_case(tag) <> "(")
       |> doc.append(attributes)
       |> doc.append(doc.from_string(")"))
     }
 
-    // TODO: Implement this properly
-    //    "text" -> {
-    //        doc.from_string("text")
-    //        |> doc.append("")
-    //    }
+    "textarea" -> {
+      let content = doc.from_string(print_string(get_text_content(children)))
+      doc.from_string("text." <> tag)
+      |> doc.append(wrap([attributes, content], "(", ")"))
+    }
+
     "use" -> {
       doc.from_string("svg.use_")
       |> doc.append(attributes)
@@ -139,7 +149,6 @@ fn print_svg_element(
     | "switch"
     | "symbol"
     | // Descriptive elements
-      //  TODO: SVG title element
       "desc"
     | "metadata"
     | // Filter effects
@@ -150,13 +159,13 @@ fn print_svg_element(
     | // Gradient Elements
       "lineargradient"
     | "radialgradient" -> {
-      let children = wrap(print_children(children, ws, True), "[", "]")
+      let children = wrap(print_children(children, ws, SVG), "[", "]")
       doc.from_string("svg." <> justin.snake_case(tag))
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
 
     _ -> {
-      let children = wrap(print_children(children, ws, True), "[", "]")
+      let children = wrap(print_children(children, ws, SVG), "[", "]")
       let tag = doc.from_string(print_string(tag))
       doc.from_string("element")
       |> doc.append(wrap([tag, attributes, children], "(", ")"))
@@ -172,7 +181,7 @@ fn print_element(
 ) -> Document {
   let tag = string.lowercase(tag)
   let attributes =
-    list.map(given_attributes, fn(a) { print_attribute(a, False) })
+    list.map(given_attributes, fn(a) { print_attribute(a, HTML) })
     |> wrap("[", "]")
 
   case tag {
@@ -295,26 +304,24 @@ fn print_element(
     | "ul"
     | "var"
     | "video" -> {
-      let children = wrap(print_children(children, ws, False), "[", "]")
+      let children = wrap(print_children(children, ws, HTML), "[", "]")
       doc.from_string("html." <> tag)
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
 
     "svg" -> {
-      // TODO: Fix double compute, avoid initial compute if we don't go to SVG land
       let attributes =
-        list.map(given_attributes, fn(a) { print_attribute(a, True) })
+        list.map(given_attributes, fn(a) { print_attribute(a, SVG) })
         |> wrap("[", "]")
 
-
-      let children = wrap(print_children(children, ws, True), "[", "]")
+      let children = wrap(print_children(children, ws, SVG), "[", "]")
       doc.from_string("svg.svg")
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
 
     "pre" -> {
       let children =
-        wrap(print_children(children, PreserveWhitespace, False), "[", "]")
+        wrap(print_children(children, PreserveWhitespace, HTML), "[", "]")
       doc.from_string("html." <> tag)
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
@@ -326,7 +333,7 @@ fn print_element(
     }
 
     _ -> {
-      let children = wrap(print_children(children, ws, False), "[", "]")
+      let children = wrap(print_children(children, ws, HTML), "[", "]")
       let tag = doc.from_string(print_string(tag))
       doc.from_string("element")
       |> doc.append(wrap([tag, attributes, children], "(", ")"))
@@ -347,14 +354,14 @@ fn get_text_content(nodes: List(HtmlNode)) -> String {
 fn print_children(
   children: List(HtmlNode),
   ws: WhitespaceMode,
-  is_svg: Bool,
+  svg_mode: OutputMode,
 ) -> List(Document) {
   list.filter_map(children, fn(node) {
     case node {
       Element(tag, attrs, children) -> {
-        case is_svg {
-          True -> Ok(print_svg_element(tag, attrs, children, ws))
-          False -> Ok(print_element(tag, attrs, children, ws))
+        case svg_mode {
+          SVG -> Ok(print_svg_element(tag, attrs, children, ws))
+          HTML -> Ok(print_element(tag, attrs, children, ws))
         }
       }
       Comment(_) -> Error(Nil)
@@ -369,7 +376,10 @@ fn print_children(
   })
 }
 
-fn print_attribute(attribute: #(String, String), is_svg: Bool) -> Document {
+fn print_attribute(
+  attribute: #(String, String),
+  svg_mode: OutputMode,
+) -> Document {
   case attribute.0 {
     "action"
     | "alt"
@@ -408,7 +418,9 @@ fn print_attribute(attribute: #(String, String), is_svg: Bool) -> Document {
     }
 
     "viewbox" ->
-        doc.from_string("attribute(\"viewBox\", " <> print_string(attribute.1) <> ")")
+      doc.from_string(
+        "attribute(\"viewBox\", " <> print_string(attribute.1) <> ")",
+      )
 
     "type" ->
       doc.from_string("attribute.type_(" <> print_string(attribute.1) <> ")")
@@ -426,8 +438,8 @@ fn print_attribute(attribute: #(String, String), is_svg: Bool) -> Document {
     }
 
     "width" | "height" | "cols" | "rows" -> {
-      case is_svg {
-        True -> {
+      case svg_mode {
+        SVG -> {
           let children = [
             doc.from_string(print_string(attribute.0)),
             doc.from_string(print_string(attribute.1)),
@@ -435,7 +447,7 @@ fn print_attribute(attribute: #(String, String), is_svg: Bool) -> Document {
           doc.from_string("attribute")
           |> doc.append(wrap(children, "(", ")"))
         }
-        False ->
+        HTML ->
           doc.from_string(
             "attribute." <> attribute.0 <> "(" <> attribute.1 <> ")",
           )
