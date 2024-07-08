@@ -201,14 +201,14 @@ pub fn pre_whitespace_test() {
 }
 
 pub fn svg_test() {
-    "<div>
+  "<div>
         <svg width=\"10\" height=\"10\" viewBox=\"0 0 10\">
             <rect width=\"8\" height=\"8\" />
         </svg>
     </div>"
-    |> html_lustre_converter.convert
-    |> should.equal(
-        "html.div(
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.div(
   [],
   [
     svg.svg(
@@ -220,6 +220,6 @@ pub fn svg_test() {
       [svg.rect([attribute(\"height\", \"8\"), attribute(\"width\", \"8\")])],
     ),
   ],
-)"
-    )
+)",
+  )
 }
