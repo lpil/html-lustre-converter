@@ -1,11 +1,10 @@
 import gleam/javascript/promise
 import html_lustre_converter
 import lustre
-import lustre/attribute.{attribute}
+import lustre/attribute
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
-import lustre/element/svg
 import lustre/event
 import plinth/browser/clipboard
 import plinth/javascript/global
@@ -20,9 +19,9 @@ pub type Model {
   Model(rendered_lustre: String, copy_button_text: String)
 }
 
-const copy_button_default_text = "Copy"
+const copy_button_default_text = "Copy 🧟"
 
-const copy_button_copied_text = "Copied"
+const copy_button_copied_text = "Copied 🥰"
 
 fn init(_flags) -> #(Model, Effect(e)) {
   let model =
@@ -97,13 +96,10 @@ fn view(model: Model) -> Element(Msg) {
           [
             event.on_click(UserClickedCopy),
             attribute.class(
-              "flex items-center gap-2 absolute bottom-3 right-3 bg-[#ffaff3] py-2 px-3 rounded-md font-bold transition-opacity hover:opacity-75",
+              "absolute bottom-3 right-3 bg-[#ffaff3] py-2 px-3 rounded-md font-bold transition-opacity hover:opacity-75",
             ),
           ],
-          [
-            lucide_copy_icon(),
-            element.text(model.copy_button_text)
-          ],
+          [element.text(model.copy_button_text)],
         ),
       ],
     ),
@@ -125,32 +121,4 @@ fn set_timeout(delay: Int, callback: fn() -> anything) -> Nil {
     Nil
   }
   global.set_timeout(callback, delay)
-}
-
-fn lucide_copy_icon() -> Element(a) {
-    svg.svg(
-      [
-        attribute.class("w-5 h-5"),
-        attribute("stroke-linejoin", "round"),
-        attribute("stroke-linecap", "round"),
-        attribute("stroke-width", "2.5"),
-        attribute("stroke", "currentColor"),
-        attribute("fill", "none"),
-        attribute("viewBox", "0 0 24 24"),
-        attribute("xmlns", "http://www.w3.org/2000/svg"),
-      ],
-      [
-        svg.rect([
-          attribute("ry", "2"),
-          attribute("rx", "2"),
-          attribute("y", "8"),
-          attribute("x", "8"),
-          attribute("height", "14"),
-          attribute("width", "14"),
-        ]),
-        svg.path([
-          attribute("d", "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"),
-        ]),
-      ],
-    )
 }
