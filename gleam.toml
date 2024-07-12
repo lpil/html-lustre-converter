@@ -17,7 +17,6 @@ allow_read = ["test", "gleam.toml"]
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
 javascript_dom_parser = ">= 1.0.0 and < 2.0.0"
 glam = ">= 2.0.0 and < 3.0.0"
-justin = ">= 1.0.1 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"

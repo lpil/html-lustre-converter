@@ -2,7 +2,6 @@ import glam/doc.{type Document}
 import gleam/list
 import gleam/string
 import javascript_dom_parser.{type HtmlNode, Comment, Element, Text} as parser
-import justin
 
 /// Convert a string of HTML in to the same document but using the Lustre HTML
 /// syntax.
@@ -123,7 +122,7 @@ fn print_svg_element(
     | "fepointlight"
     | "fespotlight"
     | "title" -> {
-      doc.from_string("svg." <> justin.snake_case(tag) <> "(")
+      doc.from_string("svg." <> tag <> "(")
       |> doc.append(attributes)
       |> doc.append(doc.from_string(")"))
     }
@@ -160,7 +159,7 @@ fn print_svg_element(
       "lineargradient"
     | "radialgradient" -> {
       let children = wrap(print_children(children, ws, SVG), "[", "]")
-      doc.from_string("svg." <> justin.snake_case(tag))
+      doc.from_string("svg." <> string.replace(tag, "-", "_"))
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
 
