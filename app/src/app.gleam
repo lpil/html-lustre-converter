@@ -109,16 +109,8 @@ fn view(model: Model) -> Element(Msg) {
 fn copy_to_clipboard(dispatch: fn(Msg) -> Nil, text: String) -> Nil {
   {
     use _ <- promise.map(clipboard.write_text(text))
-    use <- set_timeout(1000)
+    use <- global.set_timeout(1000)
     dispatch(CopyFeedbackWindowEnded)
   }
   Nil
-}
-
-fn set_timeout(delay: Int, callback: fn() -> anything) -> Nil {
-  let callback = fn(_) {
-    callback()
-    Nil
-  }
-  global.set_timeout(callback, delay)
 }
