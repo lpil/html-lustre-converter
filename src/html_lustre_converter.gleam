@@ -147,6 +147,7 @@ fn print_svg_element(
     | "pattern"
     | "switch"
     | "symbol"
+    | "svg"
     | // Descriptive elements
       "desc"
     | "metadata"
