@@ -18,7 +18,7 @@ import javascript_dom_parser.{type HtmlNode, Comment, Element, Text} as parser
 /// ```gleam
 /// import lustre/element.{element, text, svg}
 /// ```
-/// 
+///
 /// If you are only using SVGs, that's all you need to import
 /// ```gleam
 /// import lustre/element/svg
@@ -60,7 +60,7 @@ fn strip_body_wrapper(html: HtmlNode, source: String) -> List(HtmlNode) {
 }
 
 fn print_text(t: String) -> Document {
-  doc.from_string("text(" <> print_string(t) <> ")")
+  doc.from_string("html.text(" <> print_string(t) <> ")")
 }
 
 fn print_string(t: String) -> String {
