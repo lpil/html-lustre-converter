@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.2.0 - 2024-10-07
 
 - The generated code now uses the `html.text` function fully qualified.
 
