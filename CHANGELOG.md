@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## v1.3.0 - 2024-11-10
 
-- Fixed the generated code for `sript`, `title` and `option` elements.
+- Fixed the generated code for `script`, `title` and `option` elements.
 - Fixed the generated code for `text` elements inside an `svg` element.
 
 ## v1.2.0 - 2024-10-07
