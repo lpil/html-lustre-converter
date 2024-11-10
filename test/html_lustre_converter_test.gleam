@@ -104,10 +104,7 @@ pub fn its_already_a_page_test() {
   |> should.equal(
     "html.html(
   [],
-  [
-    html.head([], [html.title([], [html.text(\"Hi\")])]),
-    html.body([], [html.text(\"Yo\")]),
-  ],
+  [html.head([], [html.title([], \"Hi\")]), html.body([], [html.text(\"Yo\")])],
 )",
   )
 }
@@ -164,7 +161,7 @@ pub fn full_page_test() {
     "html.html(
   [],
   [
-    html.head([], [html.title([], [html.text(\"Hello!\")])]),
+    html.head([], [html.title([], \"Hello!\")]),
     html.body([], [html.h1([], [html.text(\"Goodbye!\")])]),
   ],
 )",
@@ -236,4 +233,28 @@ pub fn svg_test() {
   ],
 )",
   )
+}
+
+pub fn script_test() {
+  "<div><script>const a = 1</script></div>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.div([], [html.script([], \"const a = 1\")])")
+}
+
+pub fn title_test() {
+  "<div><title>wibble wobble</title></div>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.div([], [html.title([], \"wibble wobble\")])")
+}
+
+pub fn option_test() {
+  "<div><option>wibble wobble</option></div>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.div([], [html.option([], \"wibble wobble\")])")
+}
+
+pub fn svg_text_test() {
+  "<svg><text>wibble wobble</text></svg>"
+  |> html_lustre_converter.convert
+  |> should.equal("svg.svg([], [svg.text([], \"wibble wobble\")])")
 }

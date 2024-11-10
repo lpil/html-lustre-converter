@@ -133,6 +133,12 @@ fn print_svg_element(
       |> doc.append(wrap([attributes, content], "(", ")"))
     }
 
+    "text" -> {
+      let content = doc.from_string(print_string(get_text_content(children)))
+      doc.from_string("svg." <> tag)
+      |> doc.append(wrap([attributes, content], "(", ")"))
+    }
+
     "use" -> {
       doc.from_string("svg.use_")
       |> doc.append(attributes)
@@ -264,7 +270,6 @@ fn print_element(
     | "object"
     | "ol"
     | "optgroup"
-    | "option"
     | "output"
     | "p"
     | "picture"
@@ -276,7 +281,6 @@ fn print_element(
     | "ruby"
     | "s"
     | "samp"
-    | "script"
     | "search"
     | "section"
     | "select"
@@ -297,7 +301,6 @@ fn print_element(
     | "th"
     | "thead"
     | "time"
-    | "title"
     | "tr"
     | "u"
     | "ul"
@@ -325,7 +328,7 @@ fn print_element(
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
 
-    "textarea" -> {
+    "option" | "textarea" | "title" | "script" -> {
       let content = doc.from_string(print_string(get_text_content(children)))
       doc.from_string("html." <> tag)
       |> doc.append(wrap([attributes, content], "(", ")"))
