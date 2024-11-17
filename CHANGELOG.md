@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fixed the generated code for the `style` element.
+
 ## v1.3.0 - 2024-11-10
 
 - Fixed the generated code for `script`, `title` and `option` elements.

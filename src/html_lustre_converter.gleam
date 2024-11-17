@@ -288,7 +288,6 @@ fn print_element(
     | "small"
     | "span"
     | "strong"
-    | "style"
     | "sub"
     | "summary"
     | "sup"
@@ -328,7 +327,7 @@ fn print_element(
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
 
-    "option" | "textarea" | "title" | "script" -> {
+    "script" | "style" | "textarea" | "title" | "option" -> {
       let content = doc.from_string(print_string(get_text_content(children)))
       doc.from_string("html." <> tag)
       |> doc.append(wrap([attributes, content], "(", ")"))
