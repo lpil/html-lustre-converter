@@ -241,6 +241,12 @@ pub fn script_test() {
   |> should.equal("html.div([], [html.script([], \"const a = 1\")])")
 }
 
+pub fn style_test() {
+  "<div><style>body { padding: 5px }</style></div>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.div([], [html.style([], \"body { padding: 5px }\")])")
+}
+
 pub fn title_test() {
   "<div><title>wibble wobble</title></div>"
   |> html_lustre_converter.convert
