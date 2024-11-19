@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.3.1 - 2024-11-19
 
 - Fixed the generated code for the `style` element.
 
