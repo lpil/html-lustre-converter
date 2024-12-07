@@ -367,7 +367,7 @@ fn print_children(
       }
       Comment(_) -> Error(Nil)
       Text(t) if ws == StripWhitespace -> {
-        case string.trim_left(t) {
+        case string.trim_start(t) {
           "" -> Error(Nil)
           t -> Ok(print_text(t))
         }

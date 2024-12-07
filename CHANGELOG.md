@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.0 - 2024-12-07
+
+- Updated for `gleam_stdlib` v0.45.0.
+
 ## v1.3.1 - 2024-11-19
 
 - Fixed the generated code for the `style` element.
