@@ -16,7 +16,7 @@ pub fn main() {
 }
 
 pub type Model {
-  Model(rendered_lustre: String, copy_button_text: String)
+  Model(html: String, rendered_lustre: String, copy_button_text: String)
 }
 
 const copy_button_default_text = "Copy 🧟"
@@ -25,7 +25,11 @@ const copy_button_copied_text = "Copied 🥰"
 
 fn init(_flags) -> #(Model, Effect(e)) {
   let model =
-    Model(rendered_lustre: "", copy_button_text: copy_button_default_text)
+    Model(
+      html: "",
+      rendered_lustre: "",
+      copy_button_text: copy_button_default_text,
+    )
   #(model, effect.none())
 }
 
@@ -49,8 +53,8 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     }
 
     UserUpdatedHtml(html) -> {
-      let html = html_lustre_converter.convert(html)
-      let model = Model(..model, rendered_lustre: html)
+      let rendered_lustre = html_lustre_converter.convert(html)
+      let model = Model(..model, html:, rendered_lustre:)
       #(model, effect.none())
     }
   }
@@ -73,7 +77,7 @@ fn view(model: Model) -> Element(Msg) {
             ),
             event.on_input(UserUpdatedHtml),
           ],
-          "",
+          model.html,
         ),
       ],
     ),
