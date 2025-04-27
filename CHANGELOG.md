@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.2 - 2025-04-27
+
+- Fixed a bug with escaping slashes.
+
 ## v1.4.1 - 2025-04-27
 
 - Fixed a bug with whitespace preservation.

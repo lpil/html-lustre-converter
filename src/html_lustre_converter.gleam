@@ -64,7 +64,11 @@ fn print_text(t: String) -> Document {
 }
 
 fn print_string(t: String) -> String {
-  "\"" <> string.replace(t, "\"", "\\\"") <> "\""
+  let string =
+    t
+    |> string.replace("\\", "\\\\")
+    |> string.replace("\"", "\\\"")
+  "\"" <> string <> "\""
 }
 
 fn print_svg_element(

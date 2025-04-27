@@ -279,3 +279,9 @@ pub fn whitespace_after_test() {
 )",
   )
 }
+
+pub fn escape_test() {
+  "\\"
+  |> html_lustre_converter.convert
+  |> should.equal("html.text(\"\\\\\")")
+}
