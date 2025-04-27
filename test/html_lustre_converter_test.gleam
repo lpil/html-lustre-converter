@@ -264,3 +264,18 @@ pub fn svg_text_test() {
   |> html_lustre_converter.convert
   |> should.equal("svg.svg([], [svg.text([], \"wibble wobble\")])")
 }
+
+pub fn whitespace_after_test() {
+  "<p>one <a href='.'>two</a> three</p>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.p(
+  [],
+  [
+    html.text(\"one \"),
+    html.a([attribute.href(\".\")], [html.text(\"two\")]),
+    html.text(\" three\"),
+  ],
+)",
+  )
+}

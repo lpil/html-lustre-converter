@@ -29,7 +29,7 @@ pub fn convert(html: String) -> String {
     html
     |> parser.parse_to_records
     |> strip_body_wrapper(html)
-    |> print_children(StripWhitespace, HTML)
+    |> print_children(StripWhitespace, Html)
 
   case documents {
     [] -> doc.empty
@@ -45,8 +45,8 @@ type WhitespaceMode {
 }
 
 type OutputMode {
-  SVG
-  HTML
+  Svg
+  Html
 }
 
 fn strip_body_wrapper(html: HtmlNode, source: String) -> List(HtmlNode) {
@@ -75,7 +75,7 @@ fn print_svg_element(
 ) -> Document {
   let tag = string.lowercase(tag)
   let attributes =
-    list.map(attributes, fn(a) { print_attribute(a, SVG) })
+    list.map(attributes, fn(a) { print_attribute(a, Svg) })
     |> wrap("[", "]")
 
   case tag {
@@ -164,13 +164,13 @@ fn print_svg_element(
     | // Gradient Elements
       "lineargradient"
     | "radialgradient" -> {
-      let children = wrap(print_children(children, ws, SVG), "[", "]")
+      let children = wrap(print_children(children, ws, Svg), "[", "]")
       doc.from_string("svg." <> string.replace(tag, "-", "_"))
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
 
     _ -> {
-      let children = wrap(print_children(children, ws, SVG), "[", "]")
+      let children = wrap(print_children(children, ws, Svg), "[", "]")
       let tag = doc.from_string(print_string(tag))
       doc.from_string("element")
       |> doc.append(wrap([tag, attributes, children], "(", ")"))
@@ -186,7 +186,7 @@ fn print_element(
 ) -> Document {
   let tag = string.lowercase(tag)
   let attributes =
-    list.map(given_attributes, fn(a) { print_attribute(a, HTML) })
+    list.map(given_attributes, fn(a) { print_attribute(a, Html) })
     |> wrap("[", "]")
 
   case tag {
@@ -305,24 +305,24 @@ fn print_element(
     | "ul"
     | "var"
     | "video" -> {
-      let children = wrap(print_children(children, ws, HTML), "[", "]")
+      let children = wrap(print_children(children, ws, Html), "[", "]")
       doc.from_string("html." <> tag)
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
 
     "svg" -> {
       let attributes =
-        list.map(given_attributes, fn(a) { print_attribute(a, SVG) })
+        list.map(given_attributes, fn(a) { print_attribute(a, Svg) })
         |> wrap("[", "]")
 
-      let children = wrap(print_children(children, ws, SVG), "[", "]")
+      let children = wrap(print_children(children, ws, Svg), "[", "]")
       doc.from_string("svg.svg")
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
 
     "pre" -> {
       let children =
-        wrap(print_children(children, PreserveWhitespace, HTML), "[", "]")
+        wrap(print_children(children, PreserveWhitespace, Html), "[", "]")
       doc.from_string("html." <> tag)
       |> doc.append(wrap([attributes, children], "(", ")"))
     }
@@ -334,7 +334,7 @@ fn print_element(
     }
 
     _ -> {
-      let children = wrap(print_children(children, ws, HTML), "[", "]")
+      let children = wrap(print_children(children, ws, Html), "[", "]")
       let tag = doc.from_string(print_string(tag))
       doc.from_string("element")
       |> doc.append(wrap([tag, attributes, children], "(", ")"))
@@ -355,32 +355,66 @@ fn get_text_content(nodes: List(HtmlNode)) -> String {
 fn print_children(
   children: List(HtmlNode),
   ws: WhitespaceMode,
-  svg_mode: OutputMode,
+  mode: OutputMode,
 ) -> List(Document) {
-  list.filter_map(children, fn(node) {
-    case node {
-      Element(tag, attrs, children) -> {
-        case svg_mode {
-          SVG -> Ok(print_svg_element(tag, attrs, children, ws))
-          HTML -> Ok(print_element(tag, attrs, children, ws))
-        }
-      }
-      Comment(_) -> Error(Nil)
-      Text(t) if ws == StripWhitespace -> {
-        case string.trim_start(t) {
-          "" -> Error(Nil)
-          t -> Ok(print_text(t))
-        }
-      }
-      Text(t) -> Ok(print_text(t))
-    }
-  })
+  print_children_loop(children, ws, mode, [])
 }
 
-fn print_attribute(
-  attribute: #(String, String),
-  svg_mode: OutputMode,
-) -> Document {
+fn print_children_loop(
+  in: List(HtmlNode),
+  ws: WhitespaceMode,
+  mode: OutputMode,
+  acc: List(Document),
+) -> List(Document) {
+  case in {
+    [] -> list.reverse(acc)
+
+    [Element(tag, attrs, children), ..in] if mode == Svg -> {
+      let child = print_svg_element(tag, attrs, children, ws)
+      print_children_loop(in, ws, mode, [child, ..acc])
+    }
+
+    [Element(tag, attrs, children), ..in] -> {
+      let child = print_element(tag, attrs, children, ws)
+      print_children_loop(in, ws, mode, [child, ..acc])
+    }
+
+    [Comment(_), ..in] -> print_children_loop(in, ws, mode, acc)
+
+    [Text(input), ..in] if ws == StripWhitespace -> {
+      let trimmed = string.trim(input)
+
+      let trimmed = case input {
+        _ if trimmed == "" -> trimmed
+        " " <> _ | "\t" <> _ | "\n" <> _ -> " " <> trimmed
+        _ -> trimmed
+      }
+
+      let trimmed = case
+        trimmed != ""
+        && {
+          string.ends_with(input, " ")
+          || string.ends_with(input, "\n")
+          || string.ends_with(input, "\t")
+        }
+      {
+        True -> trimmed <> " "
+        False -> trimmed
+      }
+
+      case trimmed {
+        "" -> print_children_loop(in, ws, mode, acc)
+        t -> print_children_loop(in, ws, mode, [print_text(t), ..acc])
+      }
+    }
+
+    [Text(t), ..in] -> {
+      print_children_loop(in, ws, mode, [print_text(t), ..acc])
+    }
+  }
+}
+
+fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
   case attribute.0 {
     "action"
     | "alt"
@@ -439,8 +473,8 @@ fn print_attribute(
     }
 
     "width" | "height" | "cols" | "rows" -> {
-      case svg_mode {
-        SVG -> {
+      case mode {
+        Svg -> {
           let children = [
             doc.from_string(print_string(attribute.0)),
             doc.from_string(print_string(attribute.1)),
@@ -448,7 +482,7 @@ fn print_attribute(
           doc.from_string("attribute")
           |> doc.append(wrap(children, "(", ")"))
         }
-        HTML ->
+        Html ->
           doc.from_string(
             "attribute." <> attribute.0 <> "(" <> attribute.1 <> ")",
           )

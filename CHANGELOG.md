@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.1 - 2025-04-27
+
+- Fixed a bug with whitespace preservation.
+
 ## v1.4.0 - 2024-12-07
 
 - Updated for `gleam_stdlib` v0.45.0.
