@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.0 - 2025-10-19
+
+- Added knowledge of the `content` and `charset` attributes.
+
 ## v1.4.2 - 2025-04-27
 
 - Fixed a bug with escaping slashes.
