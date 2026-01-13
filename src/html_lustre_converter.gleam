@@ -14,12 +14,7 @@ import javascript_dom_parser.{type HtmlNode, Comment, Element, Text} as parser
 /// import lustre/element.{element, text}
 /// ```
 ///
-/// If the source document contains SVGs, we need one more import from lustre/element:
-/// ```gleam
-/// import lustre/element.{element, text, svg}
-/// ```
-///
-/// If you are only using SVGs, that's all you need to import
+/// If the source document contains SVGs, you also need to import lustre/element/svg:
 /// ```gleam
 /// import lustre/element/svg
 /// ```
