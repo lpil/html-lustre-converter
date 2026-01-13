@@ -16,12 +16,7 @@ import javascript_dom_parser.{type HtmlNode, Comment, Element, Text} as parser
 ///
 /// If the source document contains SVGs, we need one more import from lustre/element:
 /// ```gleam
-/// import lustre/element.{element, text, svg}
-/// ```
-///
-/// If you are only using SVGs, that's all you need to import
-/// ```gleam
-/// import lustre/element/svg
+/// import lustre/element/svg.{svg}
 /// ```
 ///
 pub fn convert(html: String) -> String {
