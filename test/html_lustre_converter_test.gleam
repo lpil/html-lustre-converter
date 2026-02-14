@@ -285,3 +285,9 @@ pub fn escape_test() {
   |> html_lustre_converter.convert
   |> should.equal("html.text(\"\\\\\")")
 }
+
+pub fn iframe_test() {
+  "<iframe></iframe>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.iframe([])")
+}
