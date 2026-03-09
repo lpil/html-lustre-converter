@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.1 - 2026-03-09
+
+- Fixed a bug where iframes would render incorrectly.
+
 ## v1.5.0 - 2025-10-19
 
 - Added knowledge of the `content` and `charset` attributes.
