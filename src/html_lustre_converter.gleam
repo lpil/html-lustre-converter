@@ -124,8 +124,7 @@ fn print_svg_element(
     | // Lighting elements
       "fedistantlight"
     | "fepointlight"
-    | "fespotlight"
-    | "title" -> {
+    | "fespotlight" -> {
       doc.from_string("svg." <> tag <> "(")
       |> doc.append(attributes)
       |> doc.append(doc.from_string(")"))
@@ -160,6 +159,7 @@ fn print_svg_element(
     | // Descriptive elements
       "desc"
     | "metadata"
+    | "title"
     | // Filter effects
       "fediffuselighting"
     | "femerge"

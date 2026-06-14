@@ -291,3 +291,12 @@ pub fn iframe_test() {
   |> html_lustre_converter.convert
   |> should.equal("html.iframe([])")
 }
+
+// Test because this finding:
+// https://github.com/lpil/html-lustre-converter/issues/26
+//
+pub fn title_inside_svg_test() {
+  "<svg><title>gleam</title></svg>"
+  |> html_lustre_converter.convert
+  |> should.equal("svg.svg([], [svg.title([], [html.text(\"gleam\")])])")
+}
