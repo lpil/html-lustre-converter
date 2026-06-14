@@ -292,7 +292,7 @@ pub fn iframe_test() {
   |> should.equal("html.iframe([])")
 }
 
-// Test because this finding:
+// Test because of this finding:
 // https://github.com/lpil/html-lustre-converter/issues/26
 //
 pub fn title_inside_svg_test() {
