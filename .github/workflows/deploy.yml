@@ -33,6 +33,9 @@ jobs:
       - name: Build app
         run: cd app && gleam run -m lustre/dev build --minify --outdir=dist
 
+      - name: Fix asset path for GitHub Pages
+        run: sed -i 's|/app.js|/html-lustre-converter/app.js|g' app/dist/index.html
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
