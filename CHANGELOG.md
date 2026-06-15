@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.2 - 2026-06-15
+
+- Fixed a bug where titles in SVGs would lose their content.
+
 ## v1.5.1 - 2026-03-09
 
 - Fixed a bug where iframes would render incorrectly.
