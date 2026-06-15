@@ -23,3 +23,6 @@ gleam_javascript = ">= 1.0.0 and < 2.0.0"
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
 lustre_dev_tools = ">= 2.0.0 and < 3.0.0"
+
+[tools.lustre.html]
+title = "HTML Lustre converter"
