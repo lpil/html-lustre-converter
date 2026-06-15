@@ -30,20 +30,16 @@ jobs:
           gleam-version: "1.17.0"
           rebar3-version: "3"
 
-      - name: Build site
-        run: |
-          cd app
-          gleam run -m lustre/dev -- build app --minify
-          # TODO: remove once Lustre dev tools have a way to build deploy ready code
-          cat index.html | sed 's|priv/static/app.css|app.min.css|' | sed 's|priv/static/app.mjs|app.min.mjs|' > priv/static/index.html
+      - name: Build app
+        run: cd app && gleam run -m lustre/dev build --minify --outdir=dist
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'app/priv/static'
+          path: "app/dist"
 
       - name: Deploy to GitHub Pages
         id: deployment
