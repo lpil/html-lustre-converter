@@ -652,7 +652,7 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
         "attribute."
         <> string.remove_suffix(namespace, "-")
         <> "("
-        <> print_string(string.remove_prefix(rest, "-"))
+        <> print_string(rest)
         <> ", "
         <> print_string(attribute.1)
         <> ")",
