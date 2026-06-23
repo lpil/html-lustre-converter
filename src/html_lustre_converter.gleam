@@ -547,7 +547,9 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
       )
 
     "type" | "as" ->
-      doc.from_string("attribute.type_(" <> print_string(attribute.1) <> ")")
+      doc.from_string(
+        "attribute." <> attribute.0 <> "_(" <> print_string(attribute.1) <> ")",
+      )
 
     "alpha"
     | "autocorrect"
