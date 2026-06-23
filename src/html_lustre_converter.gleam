@@ -59,6 +59,19 @@ fn strip_body_wrapper(html: HtmlNode, source: String) -> List(HtmlNode) {
   }
 }
 
+type BooleanMode {
+  YesNo
+  TrueFalse
+}
+
+fn parse_boolean(bool: String, mode: BooleanMode) -> Result(Bool, Nil) {
+  case mode, string.lowercase(bool) {
+    YesNo, "yes" | TrueFalse, "true" -> Ok(True)
+    YesNo, "no" | TrueFalse, "false" -> Ok(False)
+    _, _ -> Error(Nil)
+  }
+}
+
 fn print_text(t: String) -> Document {
   doc.from_string("html.text(" <> print_string(t) <> ")")
 }
@@ -420,37 +433,75 @@ fn print_children_loop(
 
 fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
   case attribute.0 {
-    "action"
+    "abbr"
+    | "accept_charset"
+    | "accesskey"
+    | "action"
     | "alt"
     | "attribute"
+    | "autocapitalize"
     | "autocomplete"
     | "charset"
     | "class"
+    | "closedby"
+    | "colorspace"
+    | "command"
+    | "commandfor"
     | "content"
+    | "contenteditable"
+    | "crossorigin"
+    | "datatime"
+    | "decoding"
+    | "dir"
+    | "dirname"
     | "download"
     | "enctype"
+    | "enterkeyhint"
+    | "fetchpriorty"
     | "for"
-    | "form_action"
-    | "form_enctype"
-    | "form_method"
-    | "form_target"
+    | "form"
+    | "formaction"
+    | "formenctype"
+    | "formmethod"
+    | "formtarget"
     | "href"
+    | "hreflang"
     | "id"
-    | "map"
+    | "inputmode"
+    | "integrity"
+    | "is"
+    | "itemid"
+    | "itemprop"
+    | "itemscope"
+    | "itemtype"
+    | "lang"
+    | "list"
+    | "loading"
     | "max"
+    | "media"
     | "method"
     | "min"
-    | "msg"
     | "name"
-    | "none"
+    | "nonce"
     | "on"
     | "pattern"
     | "placeholder"
+    | "popover"
+    | "popovertarget"
+    | "popovertargetaction"
+    | "poster"
+    | "preload"
+    | "referrerpolicy"
     | "rel"
     | "role"
+    | "scope"
+    | "size"
+    | "sizes"
     | "src"
     | "step"
     | "target"
+    | "title"
+    | "usemap"
     | "value"
     | "wrap" -> {
       doc.from_string(
@@ -463,22 +514,46 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
         "attribute(\"viewBox\", " <> print_string(attribute.1) <> ")",
       )
 
-    "type" ->
+    "type" | "as" ->
       doc.from_string("attribute.type_(" <> print_string(attribute.1) <> ")")
 
-    "checked"
+    "alpha"
+    | "autocorrect"
+    | "autofocus"
+    | "autoplay"
+    | "blocking"
+    | "checked"
     | "controls"
     | "disabled"
-    | "form_novalidate"
+    | "formnovalidate"
+    | "hidden"
+    | "inert"
+    | "ismap"
     | "loop"
+    | "multiple"
+    | "muted"
     | "novalidate"
+    | "open"
+    | "playsinline"
     | "readonly"
     | "required"
-    | "selected" -> {
+    | "selected"
+    | "shadowrootclonable"
+    | "shadowrootdelegatesfocus"
+    | "shadowrootserializable" -> {
       doc.from_string("attribute." <> attribute.0 <> "(True)")
     }
 
-    "width" | "height" | "cols" | "rows" -> {
+    "cols"
+    | "colspan"
+    | "height"
+    | "maxlength"
+    | "minlength"
+    | "rows"
+    | "rowspan"
+    | "span"
+    | "tabindex"
+    | "width" -> {
       case mode {
         Svg -> {
           let children = [
@@ -494,6 +569,31 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
           )
       }
     }
+
+    "spellcheck" | "writingsuggestions" ->
+      case parse_boolean(attribute.1, TrueFalse) {
+        Ok(True) | Error(Nil) ->
+          doc.from_string("attribute." <> attribute.0 <> "(True)")
+        Ok(False) -> doc.from_string("attribute." <> attribute.0 <> "(False)")
+      }
+    "translate" ->
+      case parse_boolean(attribute.1, YesNo) {
+        Ok(True) | Error(Nil) ->
+          doc.from_string("attribute." <> attribute.0 <> "(True)")
+        Ok(False) -> doc.from_string("attribute." <> attribute.0 <> "(False)")
+      }
+
+    // TODO: call specific aria_* functions
+    "aria" as namespace <> rest | "data" as namespace <> rest ->
+      doc.from_string(
+        "attribute."
+        <> namespace
+        <> "("
+        <> print_string(string.remove_prefix(rest, "-"))
+        <> ", "
+        <> print_string(attribute.1)
+        <> ")",
+      )
 
     _ -> {
       let children = [

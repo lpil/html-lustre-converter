@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added support for many missing attributes.
+
 ## v1.5.2 - 2026-06-15
 
 - Fixed a bug where titles in SVGs would lose their content.

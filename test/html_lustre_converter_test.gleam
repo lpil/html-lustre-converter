@@ -72,11 +72,38 @@ pub fn attribute_test() {
   )
 }
 
-pub fn other_attribute_test() {
-  "<a data-thing=\"1\">The best site</a>"
+pub fn boolean_true_false_attribute_test() {
+  "<textarea spellcheck=\"true\">The best site</textarea>
+<textarea spellcheck=\"false\">The best site</textarea>"
   |> html_lustre_converter.convert
   |> should.equal(
-    "html.a([attribute(\"data-thing\", \"1\")], [html.text(\"The best site\")])",
+    "[
+  html.textarea([attribute.spellcheck(True)], \"The best site\"),
+  html.textarea([attribute.spellcheck(False)], \"The best site\"),
+]",
+  )
+}
+
+pub fn boolean_yes_no_attribute_test() {
+  "<span translate=\"yes\">The best site</span>
+<span translate=\"no\">The best site</span>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "[
+  html.span([attribute.translate(True)], [html.text(\"The best site\")]),
+  html.span([attribute.translate(False)], [html.text(\"The best site\")]),
+]",
+  )
+}
+
+pub fn other_attribute_test() {
+  "<a data-thing=\"1\" aria-atomic=\"true\">The best site</a>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.a(
+  [attribute.aria(\"atomic\", \"true\"), attribute.data(\"thing\", \"1\")],
+  [html.text(\"The best site\")],
+)",
   )
 }
 
@@ -126,7 +153,7 @@ pub fn text_with_a_quote_in_it_test() {
 pub fn non_string_attribute_test() {
   "<br autoplay>"
   |> html_lustre_converter.convert
-  |> should.equal("html.br([attribute(\"autoplay\", \"\")])")
+  |> should.equal("html.br([attribute.autoplay(True)])")
 }
 
 pub fn bool_attribute_test() {
