@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+@theme {
+  /* Gleam's brand colors */
+  --color-faff-pink: #ffaff3;
+  --color-white: #fefefc;
+  --color-unnamed-blue: #a6f0fc;
+  --color-aged-plastic-yellow: #fffbe8;
+  --color-unexpected-aubergine: #584355;
+  --color-underwater-blue: #292d3e;
+  --color-charcoal: #2f2f2f;
+  --color-black: #1e1e1e;
+  --color-blacker: #151515;
+}
