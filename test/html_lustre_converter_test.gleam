@@ -101,7 +101,7 @@ pub fn other_attribute_test() {
   |> html_lustre_converter.convert
   |> should.equal(
     "html.a(
-  [attribute.aria(\"atomic\", \"true\"), attribute.data(\"thing\", \"1\")],
+  [attribute.aria_atomic(True), attribute.data(\"thing\", \"1\")],
   [html.text(\"The best site\")],
 )",
   )

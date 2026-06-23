@@ -438,6 +438,37 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
     | "accesskey"
     | "action"
     | "alt"
+    | "aria-activedescendant"
+    | "aria-autocomplete"
+    | "aria-braillelabel"
+    | "aria-brailleroledescription"
+    | "aria-checked"
+    | "aria-colindextext"
+    | "aria-controls"
+    | "aria-current"
+    | "aria-describedby"
+    | "aria-description"
+    | "aria-details"
+    | "aria-errormessage"
+    | "aria-flowto"
+    | "aria-haspopup"
+    | "aria-invalid"
+    | "aria-keyshortcuts"
+    | "aria-label"
+    | "aria-labelledby"
+    | "aria-live"
+    | "aria-orientation"
+    | "aria-owns"
+    | "aria-placeholder"
+    | "aria-pressed"
+    | "aria-relevant"
+    | "aria-roledescription"
+    | "aria-rowindextext"
+    | "aria-sort"
+    | "aria-valuemax"
+    | "aria-valuemin"
+    | "aria-valuenow"
+    | "aria-valuetext"
     | "attribute"
     | "autocapitalize"
     | "autocomplete"
@@ -504,8 +535,9 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
     | "usemap"
     | "value"
     | "wrap" -> {
+      let name = string.replace(attribute.0, each: "-", with: "_")
       doc.from_string(
-        "attribute." <> attribute.0 <> "(" <> print_string(attribute.1) <> ")",
+        "attribute." <> name <> "(" <> print_string(attribute.1) <> ")",
       )
     }
 
@@ -544,7 +576,17 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
       doc.from_string("attribute." <> attribute.0 <> "(True)")
     }
 
-    "cols"
+    "aria-colcount"
+    | "aria-colindex"
+    | "aria-colspan"
+    | "aria-hidden"
+    | "aria-level"
+    | "aria-posinset"
+    | "aria-rowcount"
+    | "aria-rowindex"
+    | "aria-rowspan"
+    | "aria-setsize"
+    | "cols"
     | "colspan"
     | "height"
     | "maxlength"
@@ -563,19 +605,32 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
           doc.from_string("attribute")
           |> doc.append(wrap(children, "(", ")"))
         }
-        Html ->
-          doc.from_string(
-            "attribute." <> attribute.0 <> "(" <> attribute.1 <> ")",
-          )
+        Html -> {
+          let name = string.replace(attribute.0, each: "-", with: "_")
+          doc.from_string("attribute." <> name <> "(" <> attribute.1 <> ")")
+        }
       }
     }
 
-    "spellcheck" | "writingsuggestions" ->
+    "aria-atomic"
+    | "aria-busy"
+    | "aria-disabled"
+    | "aria-expanded"
+    | "aria-modal"
+    | "aria-multiline"
+    | "aria-multiselectable"
+    | "aria-readonly"
+    | "aria-required"
+    | "aria-selected"
+    | "spellcheck"
+    | "writingsuggestions" -> {
+      let name = string.replace(attribute.0, each: "-", with: "_")
       case parse_boolean(attribute.1, TrueFalse) {
         Ok(True) | Error(Nil) ->
-          doc.from_string("attribute." <> attribute.0 <> "(True)")
-        Ok(False) -> doc.from_string("attribute." <> attribute.0 <> "(False)")
+          doc.from_string("attribute." <> name <> "(True)")
+        Ok(False) -> doc.from_string("attribute." <> name <> "(False)")
       }
+    }
     "translate" ->
       case parse_boolean(attribute.1, YesNo) {
         Ok(True) | Error(Nil) ->
@@ -583,11 +638,10 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
         Ok(False) -> doc.from_string("attribute." <> attribute.0 <> "(False)")
       }
 
-    // TODO: call specific aria_* functions
-    "aria" as namespace <> rest | "data" as namespace <> rest ->
+    "aria-" as namespace <> rest | "data-" as namespace <> rest ->
       doc.from_string(
         "attribute."
-        <> namespace
+        <> string.remove_suffix(namespace, "-")
         <> "("
         <> print_string(string.remove_prefix(rest, "-"))
         <> ", "
