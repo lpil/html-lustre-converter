@@ -59,12 +59,12 @@ fn strip_body_wrapper(html: HtmlNode, source: String) -> List(HtmlNode) {
   }
 }
 
-type BooleanMode {
+type BoolMode {
   YesNo
   TrueFalse
 }
 
-fn parse_boolean(bool: String, mode: BooleanMode) -> Result(Bool, Nil) {
+fn parse_bool(bool: String, mode: BoolMode) -> Result(Bool, Nil) {
   case mode, string.lowercase(bool) {
     YesNo, "yes" | TrueFalse, "true" -> Ok(True)
     YesNo, "no" | TrueFalse, "false" -> Ok(False)
@@ -625,14 +625,14 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
     | "spellcheck"
     | "writingsuggestions" -> {
       let name = string.replace(attribute.0, each: "-", with: "_")
-      case parse_boolean(attribute.1, TrueFalse) {
+      case parse_bool(attribute.1, TrueFalse) {
         Ok(True) | Error(Nil) ->
           doc.from_string("attribute." <> name <> "(True)")
         Ok(False) -> doc.from_string("attribute." <> name <> "(False)")
       }
     }
     "translate" ->
-      case parse_boolean(attribute.1, YesNo) {
+      case parse_bool(attribute.1, YesNo) {
         Ok(True) | Error(Nil) ->
           doc.from_string("attribute." <> attribute.0 <> "(True)")
         Ok(False) -> doc.from_string("attribute." <> attribute.0 <> "(False)")
