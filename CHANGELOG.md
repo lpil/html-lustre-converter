@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added support for many missing attributes.
+- Added support for new attribute functions found in Lustre v5.
 
 ## v1.5.2 - 2026-06-15
 
