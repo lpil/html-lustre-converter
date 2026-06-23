@@ -65,13 +65,13 @@ fn view(model: Model) -> Element(Msg) {
     html.section(
       [
         attribute.class(
-          "block w-full h-full border-2 border-r-1 border-[#ffaff3]",
+          "bg-white block w-full h-full border-2 border-r-1 border-faff-pink selected:border-unnamed-blue",
         ),
       ],
       [
         html.textarea(
           [
-            attribute.class("bg-transparent p-4 block w-full h-full"),
+            attribute.class("text-black p-4 block w-full h-full"),
             attribute.placeholder(
               "Hello!\nPaste your HTML here and I'll convert it to Lustre",
             ),
@@ -84,14 +84,14 @@ fn view(model: Model) -> Element(Msg) {
     html.section(
       [
         attribute.class(
-          "bg-[#282c34] border-2 border-l-1 border-[#ffaff3] relative",
+          "bg-underwater-blue border-2 border-l-1 border-faff-pink relative",
         ),
       ],
       [
         html.textarea(
           [
             attribute.class(
-              "bg-transparent text-gray-300 p-4 block w-full h-full",
+              "bg-transparent selected:border-unnamed-blue text-white p-4 block w-full h-full",
             ),
           ],
           model.rendered_lustre,
@@ -100,7 +100,7 @@ fn view(model: Model) -> Element(Msg) {
           [
             event.on_click(UserClickedCopy),
             attribute.class(
-              "absolute bottom-3 right-3 bg-[#ffaff3] py-2 px-3 rounded-md font-bold transition-opacity hover:opacity-75",
+              "absolute bottom-3 right-3 bg-faff-pink text-blacker py-2 px-3 rounded-md font-bold transition-opacity hover:opacity-75",
             ),
           ],
           [element.text(model.copy_button_text)],
