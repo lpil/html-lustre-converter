@@ -79,6 +79,21 @@ fn print_string(t: String) -> Document {
   doc.from_string("\"" <> string <> "\"")
 }
 
+fn print_pair_list(
+  list: List(#(String, String)),
+  acc: List(Document),
+) -> Document {
+  case list {
+    [] -> wrap(acc, "[", "]")
+    [head, ..rest] ->
+      print_pair_list(rest, [
+        [print_string(head.0), print_string(head.1)]
+          |> wrap("#(", ")"),
+        ..acc
+      ])
+  }
+}
+
 fn print_svg_element(
   tag: String,
   attributes: List(#(String, String)),
@@ -408,6 +423,8 @@ fn print_children_loop(
 
 fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
   case attribute.0 {
+    "style" -> print_style_attribute(attribute.1)
+
     "abbr"
     | "accept_charset"
     | "accesskey"
@@ -623,6 +640,44 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
         print_string(attribute.0),
         print_string(attribute.1),
       ])
+  }
+}
+
+fn print_style_attribute(input: String) -> Document {
+  case print_style_attribute_loop(input, []) {
+    Ok([]) -> doc.empty
+    Ok([#(name, value)]) ->
+      print_fn("attribute.style", [print_string(name), print_string(value)])
+    Ok(many) -> print_fn("attribute.styles", [print_pair_list(many, [])])
+
+    // We don't know how to handle this, so we just pass the unaltered text to
+    // lustre
+    Error(Nil) ->
+      print_fn("attribute", [doc.from_string("\"style\""), print_string(input)])
+  }
+}
+
+fn print_style_attribute_loop(
+  input: String,
+  acc: List(#(String, String)),
+) -> Result(List(#(String, String)), Nil) {
+  case string.split_once(input, on: ":") {
+    Error(Nil) ->
+      case string.trim(input) {
+        "" -> Ok(acc)
+        _ -> Error(Nil)
+      }
+    Ok(#(property, rest)) ->
+      case string.split_once(rest, on: ";") {
+        // The rest of the input is the value
+        Error(Nil) -> Ok([#(string.trim(property), string.trim(rest)), ..acc])
+        // There is another declaration
+        Ok(#(value, rest)) ->
+          print_style_attribute_loop(rest, [
+            #(string.trim(property), string.trim(value)),
+            ..acc
+          ])
+      }
   }
 }
 

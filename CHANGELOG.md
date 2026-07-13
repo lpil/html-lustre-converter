@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added support for `attribute.style` and `attribute.styles`
+
 ## v1.6.0 - 2026-07-03
 
 - Added support for new attribute functions found in Lustre v5.
