@@ -17,9 +17,8 @@ gleam add html_lustre_converter
 import html_lustre_converter
 
 pub fn main() {
-  "<h1>Hello, Joe!</h1>"
-  |> html_lustre_converter.convert
-  |> should.equal("html.h1([], [text(\"Hello, Joe!\")])")
+  assert html_lustre_converter.convert("<h1>Hello, Joe!</h1>")
+    == "html.h1([], [text(\"Hello, Joe!\")])"
 }
 ```
 
