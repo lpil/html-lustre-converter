@@ -327,3 +327,84 @@ pub fn title_inside_svg_test() {
   |> html_lustre_converter.convert
   |> should.equal("svg.svg([], [svg.title([], [html.text(\"gleam\")])])")
 }
+
+pub fn inline_style_test() {
+  "<div style=\"display: flex\"></div>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.div([attribute.style(\"display\", \"flex\")], [])")
+}
+
+pub fn inline_styles_test() {
+  "<div style=\"display: flex; flex-direction: column; gap: 1rem; margin-block: 100px\"></div>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.div(
+  [
+    attribute.styles(
+      [
+        #(\"display\", \"flex\"),
+        #(\"flex-direction\", \"column\"),
+        #(\"gap\", \"1rem\"),
+        #(\"margin-block\", \"100px\"),
+      ],
+    ),
+  ],
+  [],
+)",
+  )
+}
+
+pub fn inline_style_containing_string_test() {
+  "<div style=\"background: url('yellow');\"></div>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.div([attribute.style(\"background\", \"url('yellow')\")], [])",
+  )
+}
+
+pub fn inline_style_containing_double_quote_string_test() {
+  "<div style=\"background: url(&quot;yellow&quot;);\"></div>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.div([attribute.style(\"background\", \"url(\\\"yellow\\\")\")], [])",
+  )
+}
+
+pub fn inline_style_whitespace_test() {
+  "<div style=\"             gap  :          1rem      ;\"></div>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.div([attribute.style(\"gap\", \"1rem\")], [])")
+}
+
+pub fn inline_style_empty_test() {
+  "<div style=\"\"></div>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.div([], [])")
+}
+
+pub fn inline_style_invalid_test() {
+  "<div style=\"display \"></div>"
+  |> html_lustre_converter.convert
+  |> should.equal("html.div([attribute(\"style\", \"display \")], [])")
+}
+
+pub fn many_attributes_test() {
+  "<div
+  class=\"wibble wobble\"
+  height=500
+  width=1000
+  style=\"padding: 3000px; display: inline-block\"
+  ></div>"
+  |> html_lustre_converter.convert
+  |> should.equal(
+    "html.div(
+  [
+    attribute.styles([#(\"padding\", \"3000px\"), #(\"display\", \"inline-block\")]),
+    attribute.width(1000),
+    attribute.height(500),
+    attribute.class(\"wibble wobble\"),
+  ],
+  [],
+)",
+  )
+}
