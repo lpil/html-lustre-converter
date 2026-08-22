@@ -68,15 +68,15 @@ fn parse_bool(bool: String, mode: BoolMode) -> Result(Bool, Nil) {
 }
 
 fn print_text(t: String) -> Document {
-  doc.from_string("html.text(" <> print_string(t) <> ")")
+  print_fn("html.text", [print_string(t)])
 }
 
-fn print_string(t: String) -> String {
+fn print_string(t: String) -> Document {
   let string =
     t
     |> string.replace("\\", "\\\\")
     |> string.replace("\"", "\\\"")
-  "\"" <> string <> "\""
+  doc.from_string("\"" <> string <> "\"")
 }
 
 fn print_svg_element(
@@ -132,28 +132,19 @@ fn print_svg_element(
     | // Lighting elements
       "fedistantlight"
     | "fepointlight"
-    | "fespotlight" -> {
-      doc.from_string("svg." <> tag <> "(")
-      |> doc.append(attributes)
-      |> doc.append(doc.from_string(")"))
-    }
+    | "fespotlight" -> print_fn("svg." <> tag, [attributes])
 
     "textarea" -> {
-      let content = doc.from_string(print_string(get_text_content(children)))
-      doc.from_string("text." <> tag)
-      |> doc.append(wrap([attributes, content], "(", ")"))
+      let content = print_string(get_text_content(children))
+      print_fn("text." <> tag, [attributes, content])
     }
 
     "text" -> {
-      let content = doc.from_string(print_string(get_text_content(children)))
-      doc.from_string("svg." <> tag)
-      |> doc.append(wrap([attributes, content], "(", ")"))
+      let content = print_string(get_text_content(children))
+      print_fn("svg." <> tag, [attributes, content])
     }
 
-    "use" -> {
-      doc.from_string("svg.use_")
-      |> doc.append(attributes)
-    }
+    "use" -> print_fn("svg.use_", [attributes])
 
     // SVG container elements
     "defs"
@@ -177,15 +168,13 @@ fn print_svg_element(
       "lineargradient"
     | "radialgradient" -> {
       let children = wrap(print_children(children, ws, Svg), "[", "]")
-      doc.from_string("svg." <> string.replace(tag, "-", "_"))
-      |> doc.append(wrap([attributes, children], "(", ")"))
+      print_fn("svg." <> string.replace(tag, "-", "_"), [attributes, children])
     }
 
     _ -> {
       let children = wrap(print_children(children, ws, Svg), "[", "]")
-      let tag = doc.from_string(print_string(tag))
-      doc.from_string("element")
-      |> doc.append(wrap([tag, attributes, children], "(", ")"))
+      let tag = print_string(tag)
+      print_fn("element", [tag, attributes, children])
     }
   }
 }
@@ -216,11 +205,7 @@ fn print_element(
     | "param"
     | "source"
     | "track"
-    | "wbr" -> {
-      doc.from_string("html." <> tag <> "(")
-      |> doc.append(attributes)
-      |> doc.append(doc.from_string(")"))
-    }
+    | "wbr" -> print_fn("html." <> tag, [attributes])
 
     "a"
     | "abbr"
@@ -318,8 +303,7 @@ fn print_element(
     | "var"
     | "video" -> {
       let children = wrap(print_children(children, ws, Html), "[", "]")
-      doc.from_string("html." <> tag)
-      |> doc.append(wrap([attributes, children], "(", ")"))
+      print_fn("html." <> tag, [attributes, children])
     }
 
     "svg" -> {
@@ -328,28 +312,24 @@ fn print_element(
         |> wrap("[", "]")
 
       let children = wrap(print_children(children, ws, Svg), "[", "]")
-      doc.from_string("svg.svg")
-      |> doc.append(wrap([attributes, children], "(", ")"))
+      print_fn("svg.svg", [attributes, children])
     }
 
     "pre" -> {
       let children =
         wrap(print_children(children, PreserveWhitespace, Html), "[", "]")
-      doc.from_string("html." <> tag)
-      |> doc.append(wrap([attributes, children], "(", ")"))
+      print_fn("html." <> tag, [attributes, children])
     }
 
     "script" | "style" | "textarea" | "title" | "option" -> {
-      let content = doc.from_string(print_string(get_text_content(children)))
-      doc.from_string("html." <> tag)
-      |> doc.append(wrap([attributes, content], "(", ")"))
+      let content = print_string(get_text_content(children))
+      print_fn("html." <> tag, [attributes, content])
     }
 
     _ -> {
       let children = wrap(print_children(children, ws, Html), "[", "]")
-      let tag = doc.from_string(print_string(tag))
-      doc.from_string("element")
-      |> doc.append(wrap([tag, attributes, children], "(", ")"))
+      let tag = print_string(tag)
+      print_fn("element", [tag, attributes, children])
     }
   }
 }
@@ -531,20 +511,17 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
     | "value"
     | "wrap" -> {
       let name = string.replace(attribute.0, each: "-", with: "_")
-      doc.from_string(
-        "attribute." <> name <> "(" <> print_string(attribute.1) <> ")",
-      )
+      print_fn("attribute." <> name, [print_string(attribute.1)])
     }
 
     "viewbox" ->
-      doc.from_string(
-        "attribute(\"viewBox\", " <> print_string(attribute.1) <> ")",
-      )
+      print_fn("attribute", [
+        doc.from_string("\"viewBox\""),
+        print_string(attribute.1),
+      ])
 
     "type" | "as" ->
-      doc.from_string(
-        "attribute." <> attribute.0 <> "_(" <> print_string(attribute.1) <> ")",
-      )
+      print_fn("attribute." <> attribute.0 <> "_", [print_string(attribute.1)])
 
     "alpha"
     | "autocorrect"
@@ -569,9 +546,8 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
     | "selected"
     | "shadowrootclonable"
     | "shadowrootdelegatesfocus"
-    | "shadowrootserializable" -> {
-      doc.from_string("attribute." <> attribute.0 <> "(True)")
-    }
+    | "shadowrootserializable" ->
+      print_fn("attribute." <> attribute.0, [doc.from_string("True")])
 
     "aria-colcount"
     | "aria-colindex"
@@ -594,17 +570,15 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
     | "tabindex"
     | "width" -> {
       case mode {
-        Svg -> {
-          let children = [
-            doc.from_string(print_string(attribute.0)),
-            doc.from_string(print_string(attribute.1)),
-          ]
-          doc.from_string("attribute")
-          |> doc.append(wrap(children, "(", ")"))
-        }
+        Svg ->
+          print_fn("attribute", [
+            print_string(attribute.0),
+            print_string(attribute.1),
+          ])
+
         Html -> {
           let name = string.replace(attribute.0, each: "-", with: "_")
-          doc.from_string("attribute." <> name <> "(" <> attribute.1 <> ")")
+          print_fn("attribute." <> name, [doc.from_string(attribute.1)])
         }
       }
     }
@@ -623,45 +597,37 @@ fn print_attribute(attribute: #(String, String), mode: OutputMode) -> Document {
     | "writingsuggestions" -> {
       let name = string.replace(attribute.0, each: "-", with: "_")
 
-      doc.from_string(
-        "attribute."
-        <> name
-        <> case parse_bool(attribute.1, TrueFalse) {
-          Ok(True) | Error(Nil) -> "(True)"
-          Ok(False) -> "(False)"
+      print_fn("attribute." <> name, [
+        case parse_bool(attribute.1, TrueFalse) {
+          Ok(True) | Error(Nil) -> doc.from_string("True")
+          Ok(False) -> doc.from_string("False")
         },
-      )
+      ])
     }
     "translate" ->
-      doc.from_string(
-        "attribute."
-        <> attribute.0
-        <> case parse_bool(attribute.1, YesNo) {
-          Ok(True) | Error(Nil) -> "(True)"
-          Ok(False) -> "(False)"
+      print_fn("attribute." <> attribute.0, [
+        case parse_bool(attribute.1, YesNo) {
+          Ok(True) | Error(Nil) -> doc.from_string("True")
+          Ok(False) -> doc.from_string("False")
         },
-      )
+      ])
 
     "aria-" as namespace <> rest | "data-" as namespace <> rest ->
-      doc.from_string(
-        "attribute."
-        <> string.remove_suffix(namespace, "-")
-        <> "("
-        <> print_string(rest)
-        <> ", "
-        <> print_string(attribute.1)
-        <> ")",
-      )
+      print_fn("attribute." <> string.remove_suffix(namespace, "-"), [
+        print_string(rest),
+        print_string(attribute.1),
+      ])
 
-    _ -> {
-      let children = [
-        doc.from_string(print_string(attribute.0)),
-        doc.from_string(print_string(attribute.1)),
-      ]
-      doc.from_string("attribute")
-      |> doc.append(wrap(children, "(", ")"))
-    }
+    _ ->
+      print_fn("attribute", [
+        print_string(attribute.0),
+        print_string(attribute.1),
+      ])
   }
+}
+
+fn print_fn(name: String, arguments: List(Document)) -> Document {
+  doc.append(doc.from_string(name), wrap(arguments, "(", ")"))
 }
 
 fn wrap(items: List(Document), open: String, close: String) -> Document {
